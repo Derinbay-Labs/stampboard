@@ -175,7 +175,7 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
 /* Agents: a short full-width sheet of the Claude Code sessions, ruled into columns. It scrolls inside a
    low cap, and while it shows, the ledgers keep a floor and the board (which scrolls inside) yields the room. */
 .board { flex-shrink: 1; }
-.ag { flex: none; max-height: min(20vh, 220px); }
+.ag { flex: none; max-height: min(34vh, 360px); } /* three rows of sessions before it scrolls */
 .ag[hidden] { display: none; }
 .ag:not([hidden]) ~ .ledgers { min-height: min(300px, 32vh); }
 .ag ol { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(440px, 100%), 1fr)); margin-left: -1px; }
@@ -252,6 +252,10 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
             <button type="button" data-theme-set="light" data-t="themeLight">Light</button>
             <button type="button" data-theme-set="dark" data-t="themeDark">Dark</button>
           </div>
+          <div class="seg" role="group" aria-label="Language" data-t-label="language">
+            <button type="button" data-lang-set="tr" lang="tr">TR</button>
+            <button type="button" data-lang-set="en" lang="en">EN</button>
+          </div>
         </div>
       </div>
     </div>
@@ -300,7 +304,7 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
       disconnected: 'Bağlantı kesildi',
       liveAgo: (s) => `Canlı, ${s} sn önce`,
       refresh: 'Yenile',
-      theme: 'Tema', themeAuto: 'Otomatik', themeLight: 'Açık', themeDark: 'Koyu',
+      language: 'Dil', theme: 'Tema', themeAuto: 'Otomatik', themeLight: 'Açık', themeDark: 'Koyu',
       prs: "Pull request'ler", issues: "Issue'lar",
       ageUnits: ['dk', 'sa', 'g', 'ay'],
       assigning: 'Runner atanıyor',
@@ -381,7 +385,7 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
       disconnected: 'Disconnected',
       liveAgo: (s) => `Live, ${s} s ago`,
       refresh: 'Refresh',
-      theme: 'Theme', themeAuto: 'Auto', themeLight: 'Light', themeDark: 'Dark',
+      language: 'Language', theme: 'Theme', themeAuto: 'Auto', themeLight: 'Light', themeDark: 'Dark',
       prs: 'Pull requests', issues: 'Issues',
       ageUnits: ['m', 'h', 'd', 'mo'],
       assigning: 'Assigning runner',
@@ -455,8 +459,10 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
       agNoSessions: 'No Claude Code sessions on the reachable hosts.',
     },
   };
-  const asked = new URLSearchParams(location.search).get('lang'); // ?lang=en or ?lang=tr overrides the browser
-  const LANG = STRINGS[asked] ? asked : /^tr\b/i.test((navigator.languages && navigator.languages[0]) || navigator.language || '') ? 'tr' : 'en';
+  // ?lang=en or ?lang=tr, then the EN/TR switch (stored in run-panel-lang), then the browser
+  const asked = new URLSearchParams(location.search).get('lang');
+  const chosen = store.get('run-panel-lang');
+  const LANG = STRINGS[asked] ? asked : STRINGS[chosen] ? chosen : /^tr\b/i.test((navigator.languages && navigator.languages[0]) || navigator.language || '') ? 'tr' : 'en';
   const L = STRINGS[LANG];
   const LOCALE = LANG === 'tr' ? 'tr-TR' : 'en-US';
   document.documentElement.lang = LANG;
@@ -866,6 +872,17 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
   document.querySelectorAll('[data-theme-set]').forEach((b) =>
     b.addEventListener('click', () => { setTheme(b.dataset.themeSet); store.set('run-panel-theme', b.dataset.themeSet); })
   );
+  // The strings are applied once at load, so a language change reloads the page
+  document.querySelectorAll('[data-lang-set]').forEach((b) => {
+    b.setAttribute('aria-pressed', String(b.dataset.langSet === LANG));
+    b.addEventListener('click', () => {
+      if (b.dataset.langSet === LANG) return;
+      store.set('run-panel-lang', b.dataset.langSet);
+      const url = new URL(location.href);
+      url.searchParams.delete('lang');
+      location.replace(url);
+    });
+  });
   setTheme(['auto', 'light', 'dark'].includes(store.get('run-panel-theme')) ? store.get('run-panel-theme') : 'auto');
 
   render();
