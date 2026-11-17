@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://stampboard.derinbay.com/sitemap.xml
