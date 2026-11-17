@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { copyFor } from "@/content";
+import { preloadFonts } from "@/lib/fonts";
 import { localeFrom, localeParams } from "@/lib/locale";
 import { rootMetadata } from "@/lib/seo";
 import "../globals.css";
@@ -16,6 +17,7 @@ export default async function LocaleLayout({
   params: Promise<{ locale: string }>;
 }) {
   const locale = await localeFrom(params);
+  preloadFonts(locale);
   return (
     <html lang={locale}>
       <body>
