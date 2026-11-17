@@ -87,6 +87,14 @@ export function demoSnapshot() {
     pr('docs', 52, 'Document the rate limit headers', { updated: 300, review: { state: 'stale', by: ['dana'] }, author: 'sam' }),
     pr('api', 315, 'Add pagination to the audit log', { updated: 1500, review: { state: 'approved', by: ['kim'] }, seal: 'approved', labels: ['enhancement'] }),
     pr('web', 139, 'Try the new chart library', { updated: 4000, draft: true, ci: { state: 'none', failed: 0, total: 0 }, author: 'kim' }),
+    pr('billing', 64, 'Prorate plan changes mid-cycle', { updated: 25, review: { state: 'requested', by: [] }, author: 'lee', branch: 'feat/proration' }),
+    pr('infra', 211, 'Move the runners to the new subnet', { updated: 60, ci: { state: 'running', failed: 0, total: 3 }, author: 'dana', labels: ['infra'] }),
+    pr('auth', 37, 'Rotate signing keys every 90 days', { updated: 200, review: { state: 'approved', by: ['dana'] }, seal: 'approved', author: 'sam' }),
+    pr('search', 19, 'Index archived projects', { updated: 700, author: 'kim' }),
+    pr('cli', 103, 'Add a --json flag to status', { updated: 1100, review: { state: 'requested', by: [] }, author: 'lee' }),
+    pr('design-system', 48, 'Tabular numerals in data tables', { updated: 2600, author: 'kim', labels: ['design'] }),
+    pr('api', 319, 'Retry webhook delivery with backoff', { updated: 8, ci: { state: 'running', failed: 0, total: 6 }, author: 'dana', branch: 'feat/webhook-retry' }),
+    pr('mobile', 79, 'Pull to refresh on the inbox', { updated: 3100, author: 'lee' }),
   ];
   const issues = [
     issue('api', 320, 'Session token is logged at debug level', { updated: 30, labels: ['security'], seal: 'security', assignees: ['dana'], comments: 3 }),
@@ -94,6 +102,12 @@ export function demoSnapshot() {
     issue('web', 144, 'Dark mode contrast on the settings page', { updated: 400, labels: ['bug', 'design'], comments: 1 }),
     issue('docs', 55, 'Add a quick start for self-hosted runners', { updated: 2000, labels: ['documentation'] }),
     issue('api', 301, 'Support webhooks for invoice events', { updated: 9000, labels: ['enhancement'], comments: 8 }),
+    issue('billing', 66, 'Choose how to round prorated amounts', { updated: 50, labels: ['decision'], seal: 'decision', comments: 4 }),
+    issue('infra', 214, 'Runner disk fills up after nightly builds', { updated: 180, labels: ['bug'], assignees: ['dana'], comments: 2 }),
+    issue('auth', 40, 'Password reset link expires too early', { updated: 800, labels: ['bug'] }),
+    issue('search', 22, 'Typo tolerance for repository names', { updated: 3000, labels: ['enhancement'] }),
+    issue('cli', 105, 'Shell completion for zsh', { updated: 5000, labels: ['enhancement'], comments: 1 }),
+    issue('web', 146, 'Empty state for the invoices table', { updated: 6000, labels: ['design'] }),
   ];
   const now = new Date().toISOString();
   return {
@@ -102,7 +116,7 @@ export function demoSnapshot() {
     checkedAt: now,
     tookMs: 1240,
     owners: [OWNER],
-    repoCount: 4,
+    repoCount: 10,
     skipped: 0,
     intervalSeconds: 10,
     rate: { limit: 5000, remaining: 4870, reset: null },
@@ -136,7 +150,19 @@ export function demoSnapshot() {
           ],
         },
         { host: 'laptop', name: 'docs-quick-start', agent: null, status: 'idle', cwd: 'acme/docs', startedAt: ago(180), updatedAt: ago(25), subagents: [] },
-        { host: 'build-box', name: 'release-lead', agent: 'team-lead', status: 'busy', cwd: 'acme/web', startedAt: ago(95), updatedAt: ago(1), subagents: [] },
+        {
+          host: 'build-box', name: 'release-lead', agent: 'team-lead', status: 'busy', cwd: 'acme/web', startedAt: ago(95), updatedAt: ago(1),
+          subagents: [
+            { type: 'web-developer', description: 'Billing page empty states', model: 'sonnet', background: true, updatedAt: ago(1) },
+            { type: 'web-developer', description: 'Invoice table pagination', model: 'sonnet', background: true, updatedAt: ago(2) },
+            { type: 'backend-developer', description: 'Proration endpoint', model: 'sonnet', background: true, updatedAt: ago(1) },
+            { type: 'code-reviewer', description: 'Review billing PR #141', model: 'opus', background: false, updatedAt: ago(4) },
+            { type: 'qa-engineer', description: 'Verify the billing slice', model: 'sonnet', background: true, updatedAt: ago(6) },
+            { type: 'Explore', description: 'Find the chart library usages', model: null, background: false, updatedAt: ago(8) },
+            { type: 'ux-designer', description: 'Invoice history spec', model: 'opus', background: true, updatedAt: ago(9) },
+          ],
+        },
+        { host: 'build-box', name: 'infra-runners', agent: null, status: 'idle', cwd: 'acme/infra', startedAt: ago(300), updatedAt: ago(40), subagents: [] },
       ],
     },
     now,

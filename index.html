@@ -150,6 +150,17 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
 .l-count { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 500; }
 .l-note { margin-left: auto; color: var(--muted); font-size: 13px; }
 .l-note b { color: var(--seal); font-weight: 600; }
+.l-head { flex-wrap: wrap; row-gap: 0; }
+.l-filters { flex: 1 0 100%; display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none;
+  padding: 4px; margin: 5px -4px -4px; } /* the 4px padding keeps the focus ring inside the scroll box */
+.l-filters[hidden] { display: none; }
+.l-filters .flabel { flex: none; color: var(--muted); }
+.l-filters .chip { flex: none; color: var(--ink); border-color: var(--rule); }
+.l-filters .chip b { color: var(--muted); }
+.l-filters .chip:hover { background: var(--sheet-hover); border-color: var(--muted); }
+.l-filters .chip[aria-pressed="true"] { background: var(--ink); color: var(--sheet); border-color: var(--ink); }
+.l-filters .chip[aria-pressed="true"] b { color: var(--sheet); }
+.ag-split { color: var(--muted); font-size: 13px; }
 .l-body { overflow: auto; min-height: 0; }
 .l-body ol { list-style: none; margin: 0; padding: 0; }
 .entry { display: grid; align-items: center; gap: 14px; padding: 9px 18px; border-bottom: 1px solid var(--rule-soft); position: relative; }
@@ -178,9 +189,15 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
 /* Agents: a short full-width sheet of the Claude Code sessions, ruled into columns. It scrolls inside a
    low cap, and while it shows, the ledgers keep a floor and the board (which scrolls inside) yields the room. */
 .board { flex-shrink: 1; }
-.ag { flex: none; max-height: min(34vh, 360px); } /* three rows of sessions before it scrolls */
+/* While Agents shows: the board keeps N job rows, Agents yields first, the ledgers keep a lower floor */
+.ag { flex: 0 1000 auto; max-height: min(34vh, 360px); }
+.ag:has(.entry) { min-height: 104px; } /* head + the first session's name and host lines */
 .ag[hidden] { display: none; }
-.ag:not([hidden]) ~ .ledgers { min-height: min(300px, 32vh); }
+.app:has(> .ag:not([hidden])) .departures { --rows: 3; max-height: calc(34px + var(--rows) * 58px + 30px); }
+@media (min-height: 920px) { .app:has(> .ag:not([hidden])) .departures { --rows: 4; } }
+@media (min-height: 1040px) { .app:has(> .ag:not([hidden])) .departures { --rows: 5; } }
+.ag:not([hidden]) ~ .ledgers { min-height: calc(var(--lf, 0px) + clamp(150px, calc(55vh - 290px), 232px)); }
+.ledgers:has(.l-filters:not([hidden])) { --lf: 34px; }
 .ag ol { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(440px, 100%), 1fr)); margin-left: -1px; }
 .ag .entry { grid-template-columns: minmax(0, 1fr) auto 44px; align-items: start; border-left: 1px solid var(--rule-soft); }
 .ag .entry > .state, .ag .entry > .e-age { padding-top: 2px; }
@@ -218,6 +235,7 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
   .ledgers { flex: none; }
   .board { max-height: none; }
   .ledger { max-height: 75vh; }
+  .app:has(> .ag:not([hidden])) .departures { max-height: none; }
 }
 @media (max-width: 1280px) {
   .ledgers { grid-template-columns: 1fr; }
@@ -272,17 +290,17 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
   <div id="workAlert"></div>
 
   <section class="ledger ag" id="agents" aria-labelledby="h-ag" hidden>
-    <div class="l-head"><h2 id="h-ag" data-t="agents">Agents</h2><span class="l-count" id="agCount"></span><span class="l-note" id="agNote"></span></div>
+    <div class="l-head"><h2 id="h-ag" data-t="agents">Agents</h2><span class="l-count" id="agCount"></span><span class="ag-split" id="agSplit"></span><span class="l-note" id="agNote"></span></div>
     <div class="l-body" id="agList" role="group" aria-labelledby="h-ag"></div>
   </section>
 
   <main class="ledgers">
     <section class="ledger pr" aria-labelledby="h-pr">
-      <div class="l-head"><h2 id="h-pr" data-t="prs">Pull requests</h2><span class="l-count" id="prCount"></span><span class="l-note" id="prNote"></span></div>
+      <div class="l-head"><h2 id="h-pr" data-t="prs">Pull requests</h2><span class="l-count" id="prCount"></span><span class="l-note" id="prNote"></span><div class="l-filters" id="prFilters" role="group" data-t-label="prRepoFilter" hidden></div></div>
       <div class="l-body" id="prList"></div>
     </section>
     <section class="ledger is" aria-labelledby="h-is">
-      <div class="l-head"><h2 id="h-is" data-t="issues">Issues</h2><span class="l-count" id="isCount"></span><span class="l-note" id="isNote"></span></div>
+      <div class="l-head"><h2 id="h-is" data-t="issues">Issues</h2><span class="l-count" id="isCount"></span><span class="l-note" id="isNote"></span><div class="l-filters" id="isFilters" role="group" data-t-label="isRepoFilter" hidden></div></div>
       <div class="l-body" id="isList"></div>
     </section>
   </main>
@@ -381,7 +399,9 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
       scanFailed: 'Tarama başarısız.',
       agents: 'Ajanlar',
       agBusy: 'Çalışıyor', agIdle: 'Boşta',
+      agLeads: (n) => `${n} lead`,
       agSubs: (n) => `${n} alt ajan`,
+      prRepoFilter: "Pull request'leri repoya göre filtrele", isRepoFilter: "Issue'ları repoya göre filtrele",
       agBackground: 'arka planda',
       agStarted: (d) => `${d} tarihinde başladı`,
       agUnreachable: 'Ulaşılamıyor',
@@ -462,7 +482,9 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
       scanFailed: 'The scan failed.',
       agents: 'Agents',
       agBusy: 'Working', agIdle: 'Idle',
+      agLeads: (n) => `${n} ${n === 1 ? 'lead' : 'leads'}`,
       agSubs: (n) => `${n} ${n === 1 ? 'subagent' : 'subagents'}`,
+      prRepoFilter: 'Filter pull requests by repository', isRepoFilter: 'Filter issues by repository',
       agBackground: 'background',
       agStarted: (d) => `Started ${d}`,
       agUnreachable: 'Unreachable',
@@ -486,6 +508,7 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
   let lastOk = 0;
   let unreachable = false;
   const filter = { runner: null, repo: null, stuck: 'hide' }; // stuck runs start hidden
+  const lfilter = { pr: null, is: null }; // the ledgers' repo filters, independent of the board's
   let drawn = '';
   let drawnWork = '';
   let drawnAgents = '';
@@ -651,7 +674,25 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
     const bugs = count(issues, (i) => i.labels.some((l) => l.toLowerCase() === 'bug'));
     $('#isNote').innerHTML = [...[...sealed].map(([s, n]) => `<b>${n} ${esc(labelSeal(s).toLocaleLowerCase(LOCALE))}</b>`), bugs && esc(L.bugs(bugs))].filter(Boolean).join(', ');
 
-    const sig = JSON.stringify([prs, issues, w.loading, noData, !!w.error, multiOwner]);
+    // Repo chips per ledger: shown with two or more repos; a repo that vanishes clears its filter
+    const showChips = !w.loading && !noData;
+    const ledgerChips = (kind, list, host) => {
+      const counts = new Map();
+      for (const it of list) counts.set(it.repo, (counts.get(it.repo) || 0) + 1);
+      const on = showChips && counts.size >= 2;
+      if (!on || (lfilter[kind] && !counts.has(lfilter[kind]))) lfilter[kind] = null;
+      const el = $(host);
+      el.hidden = !on;
+      const html = on
+        ? `<span class="flabel">${esc(L.filterRepo)}</span>` + [...counts].sort((a, b) => b[1] - a[1])
+          .map(([repo, c]) => `<button type="button" class="chip" data-v="${esc(repo)}" aria-pressed="${lfilter[kind] === repo}">${esc(shortRepo(repo, multiOwner))}<b>${c}</b></button>`).join('')
+        : '';
+      if (el.dataset.drawn !== html) { el.dataset.drawn = html; el.innerHTML = html; } // keep a focused chip across polls
+    };
+    ledgerChips('pr', prs, '#prFilters');
+    ledgerChips('is', issues, '#isFilters');
+
+    const sig = JSON.stringify([prs, issues, w.loading, noData, !!w.error, multiOwner, lfilter.pr, lfilter.is]);
     if (sig === drawnWork) return;
     drawnWork = sig;
 
@@ -665,12 +706,14 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
       $('#isList').innerHTML = empty(L.noDataTitle, L.noDataIssues);
       return;
     }
-    const more = (shown, total, what) => (total > shown ? `<li class="more">${esc(L.more(num.format(total - shown), what, shown))}</li>` : '');
+    const more = (shown, total, what, filtered) => (total > shown && !filtered ? `<li class="more">${esc(L.more(num.format(total - shown), what, shown))}</li>` : '');
+    const shownPrs = lfilter.pr ? prs.filter((p) => p.repo === lfilter.pr) : prs;
+    const shownIssues = lfilter.is ? issues.filter((i) => i.repo === lfilter.is) : issues;
     $('#prList').innerHTML = prs.length
-      ? `<ol>${prs.map((p) => prEntry(p, multiOwner)).join('')}${more(prs.length, w.prTotal, L.prWord)}</ol>`
+      ? `<ol>${shownPrs.map((p) => prEntry(p, multiOwner)).join('')}${more(prs.length, w.prTotal, L.prWord, lfilter.pr)}</ol>`
       : empty(L.noPrsTitle, L.noPrs);
     $('#isList').innerHTML = issues.length
-      ? `<ol>${issues.map((i) => issueEntry(i, multiOwner)).join('')}${more(issues.length, w.issueTotal, L.issueWord)}</ol>`
+      ? `<ol>${shownIssues.map((i) => issueEntry(i, multiOwner)).join('')}${more(issues.length, w.issueTotal, L.issueWord, lfilter.is)}</ol>`
       : empty(L.noIssuesTitle, L.noIssues);
   }
 
@@ -714,7 +757,11 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
     if (sig === drawnAgents) return;
     drawnAgents = sig;
     $('#agents').hidden = !sessions.length && !down.length;
-    $('#agCount').textContent = sessions.length ? num.format(sessions.length) : '';
+    const subTotal = sessions.reduce((n, a) => n + (Array.isArray(a.subagents) ? a.subagents.length : 0), 0);
+    $('#agCount').textContent = sessions.length ? num.format(sessions.length + subTotal) : '';
+    $('#agSplit').innerHTML = sessions.length
+      ? `${esc(L.agLeads(sessions.length))}<span aria-hidden="true"> · </span><span class="sr">, </span>${esc(L.agSubs(subTotal))}`
+      : '';
     $('#agNote').innerHTML = down.length
       ? `<b title="${esc(down.map((h) => `${h.name}: ${h.error || L.agUnreachable}`).join('\n'))}">${esc(L.agUnreachable)}: ${esc(down.map((h) => h.name).join(', '))}</b>`
       : '';
@@ -874,6 +921,15 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
     drawn = '';
     render();
   });
+  for (const [kind, id] of [['pr', '#prFilters'], ['is', '#isFilters']]) {
+    $(id).addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-v]');
+      if (!b) return;
+      lfilter[kind] = lfilter[kind] === b.dataset.v ? null : b.dataset.v;
+      drawnWork = '';
+      render();
+    });
+  }
   $('#refresh').addEventListener('click', () => poll(true));
 
   function setTheme(t) {
