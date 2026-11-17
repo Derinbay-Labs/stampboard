@@ -14,7 +14,7 @@ monitor (1920×1080) and you can leave it open all day.
 - **Pull requests:** CI state and review state, with a stamp on the rows that need you (CI broken, changes requested, ready to merge). Updates every minute.
 - **Issues:** labels, assignees and comment counts, with a stamp for the labels you choose (`security` by default).
 - **Agents:** the [Claude Code](https://claude.com/claude-code) sessions running on this machine, and on other machines you list, with each session's active subagents. Shown only when there are any. See [Agents](#agents).
-- **Interface:** English or Turkish, picked from the browser language. Light, dark or automatic theme.
+- **Interface:** English or Turkish, picked from the browser language or the EN/TR switch. Light, dark or automatic theme.
 - **Dependencies:** none. It is one Node file for the server and one HTML file for the page.
 
 ## Requirements
@@ -75,7 +75,7 @@ Copy `config.example.json` to `config.json` and edit it. Git ignores `config.jso
 
 The `OWNERS` (comma-separated) and `PORT` environment variables override the file.
 
-The page's language follows the browser. Add `?lang=en` or `?lang=tr` to the URL to choose one.
+The page's language follows the browser until you pick one with the EN/TR switch, which the browser remembers. `?lang=en` or `?lang=tr` in the URL overrides both.
 
 ## Agents
 
@@ -111,7 +111,7 @@ panel never answers a password prompt. A machine that does not answer is shown a
 GitHub işlerinizi tek sayfada gösteren canlı bir pano. Üstte çalışan ve sırada bekleyen Actions
 job'ları, altta tüm hesap ve organizasyonlarınızdaki açık pull request'ler ve issue'lar var.
 Masaüstü monitörü (1920×1080) için tasarlandı ve gün boyu açık kalabilir. Tarayıcınız Türkçeyse
-arayüz Türkçe açılır.
+arayüz Türkçe açılır; sağ üstteki EN/TR düğmesiyle değiştirilebilir.
 
 **Gerekenler:** Node.js 26 veya üstü ve oturum açılmış GitHub CLI (`gh auth login`).
 
