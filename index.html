@@ -432,7 +432,7 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
   let serverOffset = 0; // server clock minus browser clock
   let lastOk = 0;
   let unreachable = false;
-  const filter = { runner: null, repo: null, stuck: null };
+  const filter = { runner: null, repo: null, stuck: 'hide' }; // stuck runs start hidden
   let drawn = '';
   let drawnWork = '';
   const seenSeals = new Set();
@@ -654,8 +654,8 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
     if (filter.runner && !runners.has(filter.runner)) filter.runner = null;
     if (filter.repo && !repos.has(filter.repo)) filter.repo = null;
     const stuck = data.queued.filter(isStuck).length;
-    if (!stuck) filter.stuck = null;
-    const filtered = !!(filter.runner || filter.repo || filter.stuck);
+    // The stuck choice persists while no run is stuck, so the default survives an empty board
+    const filtered = !!(filter.runner || filter.repo || (filter.stuck && stuck));
 
     const pass = (it) => (!filter.runner || runnerKey(it) === filter.runner) && (!filter.repo || it.repo === filter.repo)
       && !(filter.stuck && isStuck(it));
