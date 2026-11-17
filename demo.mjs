@@ -121,6 +121,24 @@ export function demoSnapshot() {
       prs,
       issues,
     },
+    agents: {
+      hosts: [
+        { name: 'laptop', ok: true, error: null, checkedAt: now },
+        { name: 'build-box', ok: true, error: null, checkedAt: now },
+      ],
+      sessions: [
+        {
+          host: 'laptop', name: 'invoice-webhooks', agent: null, status: 'busy', cwd: 'acme/api',
+          startedAt: ago(42), updatedAt: ago(0.2),
+          subagents: [
+            { type: 'Explore', description: 'Find webhook retry code', model: null, background: false, updatedAt: ago(0.5) },
+            { type: 'code-reviewer', description: 'Review the webhook PR', model: 'sonnet', background: true, updatedAt: ago(3) },
+          ],
+        },
+        { host: 'laptop', name: 'docs-quick-start', agent: null, status: 'idle', cwd: 'acme/docs', startedAt: ago(180), updatedAt: ago(25), subagents: [] },
+        { host: 'build-box', name: 'release-lead', agent: 'team-lead', status: 'busy', cwd: 'acme/web', startedAt: ago(95), updatedAt: ago(1), subagents: [] },
+      ],
+    },
     now,
   };
 }

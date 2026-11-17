@@ -11,6 +11,7 @@ import { format } from 'node:util';
 import path from 'node:path';
 import { appDir, loadConfig, logFile, pidFile, stateDir } from './config.mjs';
 import { demoSnapshot } from './demo.mjs';
+import { createAgentWatcher } from './agents.mjs';
 
 const args = process.argv.slice(2);
 const DEMO = args.includes('--demo');
@@ -645,7 +646,7 @@ const server = http.createServer(async (req, res) => {
           if (work.loading) waits.push(refreshWork());
         }
         if (waits.length) await Promise.race([Promise.all(waits), sleep(25000)]);
-        body = { ...state, work, now: new Date().toISOString() };
+        body = { ...state, work, agents: agents?.snapshot(), now: new Date().toISOString() };
       }
       send(res, 200, 'application/json; charset=utf-8', JSON.stringify(body), { 'Cache-Control': 'no-store' });
       return;
@@ -686,6 +687,8 @@ server.on('error', (e) => {
   throw e;
 });
 
+let agents = null; // Claude Code sessions, see agents.mjs
+
 server.listen(config.port, '127.0.0.1', () => {
   const url = `http://localhost:${config.port}`;
   console.log(`GitHub Run Panel ready: ${url}${DEMO ? '  (demo data)' : ''}`);
@@ -706,6 +709,8 @@ server.listen(config.port, '127.0.0.1', () => {
   console.log(`Scanning: ${config.owners.join(', ') || 'the signed-in gh account'}  |  refresh: Actions every ${config.intervalSeconds} s, pull requests and issues every 60 s`);
   loop();
   workLoop();
+  agents = createAgentWatcher(config);
+  agents.start(config.intervalSeconds * 1000);
 });
 
 for (const sig of ['SIGINT', 'SIGTERM']) process.on(sig, () => process.exit(0));

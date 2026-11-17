@@ -15,6 +15,7 @@ export async function loadConfig() {
     excludeRepos: [], // e.g. ["my-org/website"]
     includeArchived: false,
     sealLabels: ['security'], // issue labels that get a seal, most important first
+    agentHosts: [], // other machines whose Claude Code sessions to show, over ssh: ["build-box", { "name": "mac", "ssh": "me@mac.local" }]
   };
   let file = {};
   try {
