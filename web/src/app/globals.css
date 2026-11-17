@@ -13,10 +13,7 @@
   src: url(/fonts/funnel-display-latin-ext-wght-normal.woff2) format("woff2");
   font-weight: 300 800;
   font-display: optional;
-  unicode-range:
-    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
-    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113,
-    U+2C60-2C7F, U+A720-A7FF;
+  unicode-range: U+011E-011F, U+0130, U+015E-015F;
 }
 @font-face {
   font-family: "Funnel Sans";
@@ -32,10 +29,7 @@
   src: url(/fonts/funnel-sans-latin-ext-wght-normal.woff2) format("woff2");
   font-weight: 300 800;
   font-display: optional;
-  unicode-range:
-    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
-    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113,
-    U+2C60-2C7F, U+A720-A7FF;
+  unicode-range: U+011E-011F, U+0130, U+015E-015F;
 }
 @font-face {
   font-family: "Archivo";
@@ -53,10 +47,7 @@
   font-weight: 100 900;
   font-stretch: 62% 125%;
   font-display: optional;
-  unicode-range:
-    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
-    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113,
-    U+2C60-2C7F, U+A720-A7FF;
+  unicode-range: U+011E-011F, U+0130, U+015E-015F;
 }
 @font-face {
   font-family: "JetBrains Mono";
@@ -72,10 +63,7 @@
   src: url(/fonts/jbmono-latin-ext.woff2) format("woff2");
   font-weight: 400 700;
   font-display: optional;
-  unicode-range:
-    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
-    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113,
-    U+2C60-2C7F, U+A720-A7FF;
+  unicode-range: U+011E-011F, U+0130, U+015E-015F;
 }
 
 :root {
@@ -657,7 +645,12 @@ dd {
 }
 @media (max-width: 520px) {
   .nav-end .btn-gh span {
-    display: none;
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
   }
   .nav-end .btn-gh {
     padding: 0 12px;
@@ -1561,6 +1554,21 @@ dd {
 }
 .peek .sb {
   pointer-events: none;
+  /* Bound the layout box: its clipped overflow otherwise overlaps the footer for contrast checks. */
+  height: 100%;
+  overflow: hidden;
+}
+.peek .sb-app {
+  height: 100%;
+  overflow: hidden;
+}
+.peek .sb-app > :not(:first-child) {
+  display: none;
+}
+.peek .sb-app > :first-child {
+  flex: none;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 @media (max-width: 860px) {
