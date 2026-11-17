@@ -17,8 +17,9 @@ through type (Funnel Display, Funnel Sans), the section order, the trust ledger 
 nameplate in the footer, which keeps its own `--lab-*` blue-slate colours.
 
 The seal's meaning is kept: `DESIGN.md` reserves vermilion for "needs you". On the landing it lands
-only on the install entry ("Your move": the one action the visitor has to take) and on the four
-example seals in the close-up, each labelled. Nothing else is red.
+on the install entry and the final CTA ("Your move": the one action the visitor has to take), on
+the four labelled example seals in the close-up, and as the text-selection colour. Inside the
+product sheets it keeps the product's own meaning.
 
 Calibration risk: cream plus red is a common generated-page look (the detector flags the cream
 ground). It is used here because the product pins exactly this palette; the binder, the double rule
@@ -53,7 +54,7 @@ One of three; see [README.md](README.md).
 | State | Behaviour |
 |---|---|
 | Default | Actions tab, 3 running and 3 queued. |
-| Empty | Each sheet uses the product's own empty copy if its data is empty (for example "The board is empty. Jobs appear here when a workflow starts."); the mockup shows the quiet state in the close-ups only. |
+| Empty | Each sheet uses the product's own empty copy if its data is empty (for example "The board is empty. Jobs appear here when a workflow starts."); the mockup does not show an empty sheet; Option 1's Quiet evening scene shows the product's quiet state. |
 | Loading | Static; fonts swap from system fallback. |
 | Error | Copy failure selects the command and announces "Select the command to copy it". |
 | Partial data | The Agents close-up shows `nas` unreachable in the sheet head. |
@@ -122,7 +123,7 @@ Shared step, trust and footer strings as in Option 1.
 ## 8. Accessibility acceptance criteria
 
 - Focus order: skip link, logo, nav, TR/EN, GitHub, hero Copy, hero GitHub, binder tablist (one
-  stop, arrows/Home/End), tabpanel, step commands, final Copy, footer links, Labs nameplate.
+  stop, arrows/Home/End), tabpanel (`tabindex="0"`), final Copy, footer links, Labs nameplate.
 - Index tabs are 48 px tall (52 px selected); every other control at least 44 px.
 - The hero seal is `role="img"` with "Seal: your move"; the decorative final seal is `aria-hidden`;
   the close-up seal row is `aria-hidden` and the definition list beside it carries the meanings.

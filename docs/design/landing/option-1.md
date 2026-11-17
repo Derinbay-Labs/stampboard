@@ -87,6 +87,7 @@ Sans has no tabular figures). The product UI keeps Archivo and JetBrains Mono.
 | accent-ink `#FFFFFF` | accent `#1E4E8C` | 8.32 | 4.5 |
 | focus `#1E4E8C` | wall `#D9E1EC` | 6.31 | 3 |
 | cmd ink `#E7ECF3` | cmd-bg `#111A27` | 14.73 | 4.5 |
+| cmd focus `#94B8E8` | cmd-bg `#111A27` | 8.56 | 3 |
 | ink `#E7ECF3` | ground `#0D1117` | 15.94 | 4.5 |
 | mut `#A2ADBD` | wall `#172131` | 7.12 | 4.5 |
 | mut `#A2ADBD` | surface `#151C27` | 7.54 | 4.5 |
@@ -117,8 +118,8 @@ check, token kept server-side, read-only, no third parties, strict CSP, session 
 ## 8. Accessibility acceptance criteria
 
 - Focus order: skip link, logo, nav (The board, Install, Security), TR/EN, GitHub, hero Copy, scene
-  tablist (one tab stop; Arrow keys, Home and End move), the three notes, close-up content, step
-  commands, final Copy, final GitHub, footer links, Labs nameplate.
+  tablist (one tab stop; Arrow keys, Home and End move), the screen tabpanel (`tabindex="0"`), the
+  three notes, final Copy, final GitHub, footer links, Labs nameplate.
 - Every control is at least 44 by 44 px; the copy and primary buttons are 48 px tall.
 - Scene tabs: `role="tablist"`, `aria-selected`, `aria-controls`; the panel is labelled by the
   selected tab.
@@ -142,7 +143,7 @@ check, token kept server-side, read-only, no third parties, strict CSP, session 
 - Fonts self-hosted as WOFF2 (the mockup inlines them as `data:` URIs so the file opens offline).
 - No analytics, no third-party scripts. The product figure is static HTML in production: the
   sample-data renderer may run at build time; live timers are the only runtime script besides copy.
-- The monitor is presentation. Under 860 px it drops the stand and shows the screen full width.
+- The monitor is presentation. Under 860 px the bezel thins and the screen takes the full width.
 
 ## 10. Open questions
 

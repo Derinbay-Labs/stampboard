@@ -302,7 +302,7 @@ html[data-mode="dark"] .sb {
   .sb .pr .entry, .sb .is .entry, .sb .ag .entry { grid-template-columns: minmax(0, 1fr) auto auto; padding: 9px 12px; gap: 6px 10px; }
   .sb .pr .entry { grid-template-columns: minmax(0, 1fr) auto auto auto; }
   .sb .e-rev, .sb .e-com { display: none !important; }
-  .sb .l-note { display: none; }
+  .sb .l-head { flex-wrap: wrap; }
   .sb .sb-foot { display: none; }
 }
 .sb .b-empty { margin: 0; padding: 20px; color: var(--board-muted); font-size: 14px; }
@@ -405,7 +405,6 @@ main + .foot { margin-top: 0; }
   .spec div:nth-child(even) { padding-left: 20px; border-left: 1px solid var(--line); }
   .spec div:nth-child(n+3) { border-top: 1px solid var(--line); }
 }
-@media (max-width: 520px) { .dep .gate, .dep thead .gate { display: none; } }
 </style>
 </head>
 <body>
@@ -423,11 +422,11 @@ main + .foot { margin-top: 0; }
     <p class="hall-lead" data-c="lead"></p>
     <table class="dep">
       <caption data-c="depCap"></caption>
-      <thead><tr><th class="lamp-c"><span class="sr-only" data-c="colState"></span></th><th data-c="colN"></th><th data-c="colCmd"></th><th class="what what-h" data-c="colWhat"></th><th class="gate" data-c="colTime"></th></tr></thead>
+      <thead><tr><th class="lamp-c"><span class="sr-only" data-c="colState"></span></th><th data-c="colN"></th><th data-c="colCmd"></th><th class="what what-h" data-c="colWhat"></th></tr></thead>
       <tbody>
-        <tr><td class="lamp-c"><span class="lamp on" role="img" data-al="now"></span></td><td class="n">01</td><td><code>git clone https://github.com/derinbay/stampboard.git</code></td><td class="what" data-c="d1"></td><td class="gate" data-c="d1t"></td></tr>
-        <tr><td class="lamp-c"><span class="lamp off" role="img" data-al="next"></span></td><td class="n">02</td><td><code>cd stampboard &amp;&amp; npm start</code></td><td class="what" data-c="d2"></td><td class="gate" data-c="d2t"></td></tr>
-        <tr><td class="lamp-c"><span class="lamp off" role="img" data-al="next"></span></td><td class="n">03</td><td><code>localhost:4747</code></td><td class="what" data-c="d3"></td><td class="gate" data-c="d3t"></td></tr>
+        <tr><td class="lamp-c"><span class="lamp on" role="img" data-al="now"></span></td><td class="n">01</td><td><code>git clone https://github.com/derinbay/stampboard.git</code></td><td class="what" data-c="d1"></td></tr>
+        <tr><td class="lamp-c"><span class="lamp off" role="img" data-al="next"></span></td><td class="n">02</td><td><code>cd stampboard &amp;&amp; npm start</code></td><td class="what" data-c="d2"></td></tr>
+        <tr><td class="lamp-c"><span class="lamp off" role="img" data-al="next"></span></td><td class="n">03</td><td><code>localhost:4747</code></td><td class="what" data-c="d3"></td></tr>
       </tbody>
     </table>
     <div class="hall-cta"><div class="cmd"><pre id="cmd-hero"><span class="p" aria-hidden="true">$ </span>git clone https://github.com/derinbay/stampboard.git

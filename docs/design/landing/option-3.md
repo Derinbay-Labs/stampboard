@@ -32,7 +32,7 @@ As Option 1. No login button.
 ## 3. Flow
 
 1. Hall: H1, clock, lead; the install as three departures (clone, start, open `localhost:4747`)
-   with what happens and how long; then the Copy block and the install note.
+   with what happens at each; then the Copy block and the install note.
 2. Live board: filter chips work; the board narrows; a polite announcement says how many jobs are
    shown.
 3. "Yellow means running. Red means you.": the lamp and stamp legend beside the pull-request
@@ -107,27 +107,28 @@ and a text label.
 |---|---|---|
 | H1 | A departure board for your GitHub day. | GitHub gününüz için bir kalkış tabelası. |
 | Lead | Running and queued Actions jobs, every open pull request and issue, and the Claude Code sessions on your machines, on one page for a spare monitor. It runs on your computer and only reads. | Çalışan ve sıradaki Actions job'ları, açık her pull request ve issue, makinelerinizdeki Claude Code oturumları; boştaki monitör için tek sayfada. Bilgisayarınızda çalışır ve yalnızca okur. |
-| Departures | One server file, one page file / Needs Node.js 26 and a signed-in gh / Leave it open on the spare monitor | Bir sunucu dosyası, bir sayfa dosyası / Node.js 26 ve oturum açılmış gh gerekir / Boştaki monitörde açık bırakın |
+| Departures (what happens) | One server file, one page file / Needs Node.js 26 and a signed-in gh / Leave it open on the spare monitor | Bir sunucu dosyası, bir sayfa dosyası / Node.js 26 ve oturum açılmış gh gerekir / Boştaki monitörde açık bırakın |
 | Board caption | Try it. Pick a runner or a repository to filter the board, as you would on the monitor. | Deneyin. Tabelayı süzmek için bir runner ya da repo seçin; monitörde de böyle çalışır. |
 | Announcement | `n` jobs shown | `n` job gösteriliyor |
 | Section | Yellow means running. Red means you. | Sarı çalışıyor demek. Kırmızı siz demek. |
 | Final | Give the spare monitor a job. | Boştaki monitöre bir iş verin. |
 
-The departure times ("~5 s", "~1 s", "all day") are illustrative; product-manager confirms or
-drops them.
+The departures have no time column: there is no measured install time to show.
 
 ## 8. Accessibility acceptance criteria
 
 - Focus order: skip link, logo, nav, TR/EN, GitHub, hero Copy, filter chips (runner, then
-  repository; each a toggle button), step commands, final Copy, footer links, Labs nameplate.
+  repository; each a toggle button), final Copy, footer links, Labs nameplate.
 - Filter chips are 44 px tall with `aria-pressed`; after a press focus stays on the same chip
-  (the board re-renders and focus is restored) and `#live` announces the shown count.
+  (the board re-renders and focus is restored) and `#live` announces the shown count. Verified by
+  script: build-box gives 1 row, "1 job shown"; adding repo web gives the empty copy, "0 jobs
+  shown", focus on the web chip, all 7 chips still present.
 - Lamps in the install table are `role="img"` labelled "Now" and "Next"; the board's own lamps say
   "Running" and "Queued".
 - The final small board is `aria-hidden` (it repeats the live board).
 - Focus ring is the lamp yellow inside the hall and the final band, ink blue on paper.
-- Under 860 px the "What happens" column hides; under 520 px the time column hides too; the
-  command always wraps rather than scrolling the page.
+- Under 860 px the "What happens" column hides; the command always wraps rather than scrolling
+  the page.
 - Reduced motion: no transitions; the clock still ticks (it is content, not decoration).
 
 ## 9. Platform notes

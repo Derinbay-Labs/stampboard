@@ -52,8 +52,9 @@ one where page and product are visibly one object, at moderate cost.
 
 ## Contrast
 
-Every pair each option uses is measured in its own file (sections 6). All text pairs pass 4.5:1
-and all focus rings 3:1 in both themes. Two adjustments came out of the measurement: Option 2's
+Every page pair each option uses is measured in its own file (section 6), including the focus
+ring inside the dark command blocks. All page text pairs pass 4.5:1 and all focus rings 3:1 in
+both themes; the one product pair under 4.5:1 is open question 4. Two adjustments came out of the measurement: Option 2's
 dark page seal is `#EC6450` instead of the product's `#E4553F` (4.80 against 4.22 on its wash), and
 Option 3's yellow legend key has an ink outline on paper.
 
@@ -72,7 +73,7 @@ Option 3's yellow legend key has an ink outline on paper.
 2. **Copy** is a designer draft in EN and TR; product-manager owns the final strings.
 3. **Sample data** is `demo.mjs`'s synthetic `acme` organisation; no real account appears.
 4. **Product seal in dark mode.** The product's own `#E4553F` on its 8 % wash measures
-   4.13:1 for the 12.5 px seal text, under 4.5:1. That is a product finding, not a landing one; it
+   4.13:1 for the 12.5 px seal text (4.49:1 on the plain sheet), under 4.5:1. That is a product finding, not a landing one; it
    shows inside every mockup's product sheets. Recommend a `DESIGN.md` follow-up.
 5. **Detector.** `impeccable detect` on the three mockups reports: `cramped-padding` on the
    review shell bar and on full-bleed wrappers whose content is inset by `.wrap` (false positives);
