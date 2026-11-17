@@ -90,7 +90,7 @@ jobs:
 
       - name: Smoke the preview
         run: |
-          for p in en/ tr/; do  # TODO(#15): add robots.txt sitemap.xml once the SEO surfaces exist
+          for p in en/ tr/ robots.txt sitemap.xml; do
             code=000
             for _ in 1 2 3 4 5 6; do
               code=$(curl -s -o /dev/null -w '%{http_code}' "$PREVIEW_URL/$p" || true)
@@ -112,7 +112,7 @@ jobs:
           hosts="stampboard-derinbay.web.app"
           [ -z "$LIVE_DOMAIN" ] || hosts="$hosts $LIVE_DOMAIN"
           for h in $hosts; do
-            for p in en/ tr/; do  # TODO(#15): add robots.txt sitemap.xml once the SEO surfaces exist
+            for p in en/ tr/ robots.txt sitemap.xml; do
               code=000
               for _ in 1 2 3 4 5 6; do
                 code=$(curl -s -o /dev/null -w '%{http_code}' "https://$h/$p" || true)
