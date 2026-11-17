@@ -3,3 +3,6 @@ config.json
 PRODUCT.md
 node_modules/
 *.log
+web/node_modules
+web/.next
+web/out
