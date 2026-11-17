@@ -662,8 +662,8 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
     const running = data.running.filter(pass);
     const queued = data.queued.filter(pass);
 
-    // Headline: the counts read as a sentence
-    const r = data.running.length, q = data.queued.length;
+    // Headline and tab title: the counts read as a sentence; hidden stuck runs are not counted
+    const r = data.running.length, q = data.queued.length - (filter.stuck ? stuck : 0);
     const noData = !data.updatedAt && !!data.error; // no successful scan yet: "no jobs" would mislead
     let headline;
     if (data.loading) headline = L.scanning;
