@@ -20,7 +20,7 @@
   color-scheme: light;
   --paper: #f4f1ea; --grid: #e7e1d4; --sheet: #fbf9f4; --sheet-hover: #ffffff;
   --ink: #22201c; --muted: #685f52; --rule: #cfc7b6; --rule-soft: #e4ddcf;
-  --seal: #c23523; --seal-wash: rgba(194, 53, 35, .06);
+  --seal: #c23523; --seal-wash: rgba(194, 53, 35, .06); --on-seal: #fff;
   --pass: #4c6a2a; --run: #2f4a7a; --focus: #2f4a7a;
   --board: #141310; --board-2: #1f1d19; --board-rule: #34312b; --board-ink: #f4f1ea; --board-muted: #a8a196;
   --lamp: #ffcf33; --plate: #f4f1ea; --plate-ink: #141310;
@@ -31,7 +31,7 @@
     color-scheme: dark;
     --paper: #1a1916; --grid: #22201c; --sheet: #201e1b; --sheet-hover: #292723;
     --ink: #ece6d8; --muted: #a49d8f; --rule: #3b3832; --rule-soft: #2e2b26;
-    --seal: #e4553f; --seal-wash: rgba(228, 85, 63, .08);
+    --seal: #ee6b56; --seal-wash: rgba(238, 107, 86, .08); --on-seal: #1a1916;
     --pass: #9bb86a; --run: #93a9d6; --focus: #93a9d6;
     --board: #0d0c0b; --board-2: #181714; --board-rule: #2e2b26; --board-ink: #ece6d8; --board-muted: #a49d8f;
     --plate: #ece6d8; --shadow: 0 1px 0 var(--rule), 0 6px 18px -10px rgba(0, 0, 0, .7);
@@ -41,7 +41,7 @@
   color-scheme: dark;
   --paper: #1a1916; --grid: #22201c; --sheet: #201e1b; --sheet-hover: #292723;
   --ink: #ece6d8; --muted: #a49d8f; --rule: #3b3832; --rule-soft: #2e2b26;
-  --seal: #e4553f; --seal-wash: rgba(228, 85, 63, .08);
+  --seal: #ee6b56; --seal-wash: rgba(238, 107, 86, .08); --on-seal: #1a1916;
   --pass: #9bb86a; --run: #93a9d6; --focus: #93a9d6;
   --board: #0d0c0b; --board-2: #181714; --board-rule: #2e2b26; --board-ink: #ece6d8; --board-muted: #a49d8f;
   --plate: #ece6d8; --shadow: 0 1px 0 var(--rule), 0 6px 18px -10px rgba(0, 0, 0, .7);
@@ -61,7 +61,7 @@ body {
 a { color: inherit; text-decoration: none; }
 a:hover { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 2px; }
-::selection { background: var(--seal); color: #fff; }
+::selection { background: var(--seal); color: var(--on-seal); }
 * { scrollbar-width: thin; scrollbar-color: var(--rule) transparent; }
 .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }
 svg { flex: none; }
