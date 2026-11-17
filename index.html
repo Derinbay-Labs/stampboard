@@ -200,11 +200,11 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
 .ledgers:has(.l-filters:not([hidden])) { --lf: 34px; }
 /* Short ledgers stop at their content and hand the spare height to Agents, which grows up to its own content */
 @media (min-width: 1281px) and (min-height: 761px) {
-  .ag:not([hidden]) ~ .ledgers { flex: 1000 1 auto; max-height: max-content; min-height: calc(var(--lf, 0px) + 150px); }
-  .app:has(> .ag:not([hidden])) .board { flex-shrink: .001; } /* the board keeps its rows; ledgers and Agents yield first */
-  .ag:not([hidden]) { flex: 1 1000 min(34vh, 360px); max-height: max-content; min-height: clamp(104px, calc(100vh - 890px), 360px); }
+  .ag:not([hidden]) ~ .ledgers { flex: 1000 1000 auto; max-height: max-content; min-height: calc(var(--lf, 0px) + 150px); }
+  .app:has(> .ag:not([hidden])) .board { flex-shrink: 1; } /* the board yields last: ledgers shrink at 1000x weight to their floor first */
+  .ag:not([hidden]) { flex: 1 1000 min(34vh, 360px); max-height: max-content; min-height: max-content; } /* Agents never clips: ledgers, then the board, yield */
 }
-.ag ol { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(440px, 100%), 1fr)); margin-left: -1px; }
+.ag ol { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); margin-left: -1px; }
 .ag .entry { grid-template-columns: minmax(0, 1fr) auto 44px; align-items: start; border-left: 1px solid var(--rule-soft); }
 .ag .entry > .state, .ag .entry > .e-age { padding-top: 2px; }
 .ag .e-name { display: block; font-weight: 600; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -242,6 +242,7 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
   .board { max-height: none; }
   .ledger { max-height: 75vh; }
   .app:has(> .ag:not([hidden])) .departures { max-height: none; }
+  .ag { max-height: none; }
 }
 @media (max-width: 1280px) {
   .ledgers { grid-template-columns: 1fr; }
