@@ -327,7 +327,8 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
       reposScanned: (n) => `${n} repo taranıyor.`,
       busyRunners: (l) => `Meşgul runner: ${l}.`,
       noDataSub: 'Uyarıdaki adımı uygula; veri gelince burada görünür.',
-      filterRunner: 'Runner', filterRepo: 'Repo',
+      filterRunner: 'Runner', filterRepo: 'Repo', filterStuck: 'Takılı', hideStuck: 'Gizle',
+      stuckTitle: 'Bir saatten uzun süredir job oluşmadan sırada',
       titleCounts: (r, q) => `(${r} çalışıyor, ${q} sırada) `,
       restQuota: (r, l) => `REST hakkı ${r} / ${l}`,
       gqlQuota: (r, l) => `GraphQL hakkı ${r} / ${l}`,
@@ -400,7 +401,8 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
       reposScanned: (n) => `Scanning ${n} ${n === 1 ? 'repository' : 'repositories'}.`,
       busyRunners: (l) => `Busy: ${l}.`,
       noDataSub: 'Follow the step in the alert; data appears here once it arrives.',
-      filterRunner: 'Runner', filterRepo: 'Repo',
+      filterRunner: 'Runner', filterRepo: 'Repo', filterStuck: 'Stuck', hideStuck: 'Hide',
+      stuckTitle: 'Queued for over an hour with no jobs',
       titleCounts: (r, q) => `(${r} running, ${q} queued) `,
       restQuota: (r, l) => `REST quota ${r} / ${l}`,
       gqlQuota: (r, l) => `GraphQL quota ${r} / ${l}`,
@@ -430,7 +432,7 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
   let serverOffset = 0; // server clock minus browser clock
   let lastOk = 0;
   let unreachable = false;
-  const filter = { runner: null, repo: null };
+  const filter = { runner: null, repo: null, stuck: null };
   let drawn = '';
   let drawnWork = '';
   const seenSeals = new Set();
@@ -457,6 +459,9 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
     return d < 60 ? `${d} ${da}` : `${Math.floor(d / 30)} ${mo}`;
   };
   const longDate = (iso) => new Date(iso).toLocaleString(LOCALE, { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+  // A run left queued with no jobs for an hour never starts (e.g. orphaned by an Actions incident)
+  const STUCK_MS = 60 * 60 * 1000;
+  const isStuck = (it) => it.kind === 'queued' && !it.job && nowMs() - Date.parse(it.since) > STUCK_MS;
   const shortRepo = (repo, multiOwner) => (multiOwner ? repo : repo.split('/')[1]);
 
   // ---------- Icons (one stroke width) ----------
@@ -510,10 +515,10 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
     return `<table>${head}<tbody>${running.map((it) => depRow(it, multiOwner)).join('')}${sep}${queued.map((it) => depRow(it, multiOwner)).join('')}</tbody></table>`;
   }
 
-  function chips(kind, label, entries) {
+  function chips(kind, label, entries, title = '') {
     if (!entries.length) return '';
     const buttons = entries
-      .map(([value, count, shown]) => `<button type="button" class="chip" data-f="${kind}" data-v="${esc(value)}" aria-pressed="${filter[kind] === value}">${esc(shown)}<b>${count}</b></button>`)
+      .map(([value, count, shown]) => `<button type="button" class="chip" data-f="${kind}" data-v="${esc(value)}" aria-pressed="${filter[kind] === value}"${title ? ` title="${esc(title)}"` : ''}>${esc(shown)}<b>${count}</b></button>`)
       .join('');
     return `<div class="frow"><span class="flabel">${esc(label)}</span>${buttons}</div>`;
   }
@@ -648,9 +653,12 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
     }
     if (filter.runner && !runners.has(filter.runner)) filter.runner = null;
     if (filter.repo && !repos.has(filter.repo)) filter.repo = null;
-    const filtered = !!(filter.runner || filter.repo);
+    const stuck = data.queued.filter(isStuck).length;
+    if (!stuck) filter.stuck = null;
+    const filtered = !!(filter.runner || filter.repo || filter.stuck);
 
-    const pass = (it) => (!filter.runner || runnerKey(it) === filter.runner) && (!filter.repo || it.repo === filter.repo);
+    const pass = (it) => (!filter.runner || runnerKey(it) === filter.runner) && (!filter.repo || it.repo === filter.repo)
+      && !(filter.stuck && isStuck(it));
     const running = data.running.filter(pass);
     const queued = data.queued.filter(pass);
 
@@ -675,7 +683,9 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
 
     const runnerEntries = [...runners].sort((a, b) => b[1] - a[1]).map(([k, c]) => [k, c, k]);
     const repoEntries = [...repos].sort((a, b) => b[1] - a[1]).map(([k, c]) => [k, c, shortRepo(k, multiOwner)]);
-    $('#filters').innerHTML = all.length > 1 ? chips('runner', L.filterRunner, runnerEntries) + chips('repo', L.filterRepo, repoEntries) : '';
+    const stuckEntries = stuck ? [['hide', stuck, L.hideStuck]] : [];
+    $('#filters').innerHTML = (all.length > 1 ? chips('runner', L.filterRunner, runnerEntries) + chips('repo', L.filterRepo, repoEntries) : '')
+      + chips('stuck', L.filterStuck, stuckEntries, L.stuckTitle);
 
     // Board: leave the DOM alone unless data, alert or filter changed
     const alert = alertHtml();

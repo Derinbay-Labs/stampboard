@@ -10,7 +10,7 @@ monitor (1920×1080) and you can leave it open all day.
 
 *The screenshots show the built-in demo data.*
 
-- **Actions board:** running and queued jobs, which runner they are on (self-hosted or GitHub-hosted), and live timers. Filter by runner or repository. Updates every 10 seconds.
+- **Actions board:** running and queued jobs, which runner they are on (self-hosted or GitHub-hosted), and live timers. Filter by runner or repository, and hide stuck runs (queued for over an hour with no jobs). Updates every 10 seconds.
 - **Pull requests:** CI state and review state, with a stamp on the rows that need you (CI broken, changes requested, ready to merge). Updates every minute.
 - **Issues:** labels, assignees and comment counts, with a stamp for the labels you choose (`security` by default).
 - **Interface:** English or Turkish, picked from the browser language. Light, dark or automatic theme.
