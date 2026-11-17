@@ -12,7 +12,7 @@ import {
 } from "@/components/Sections";
 import { copyFor } from "@/content";
 import { localeFrom } from "@/lib/locale";
-import { metadataFor } from "@/lib/seo";
+import { jsonLdFor, jsonLdScript, metadataFor } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -27,6 +27,11 @@ export default async function LandingPage({ params }: { params: Promise<{ locale
   const t = copyFor(locale);
   return (
     <>
+      <script
+        type="application/ld+json"
+        // Static JSON built from constants at build time; `<` is escaped by jsonLdScript.
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(jsonLdFor(locale)) }}
+      />
       <Nav t={t} locale={locale} />
       <main id="main">
         <Hero t={t} />
