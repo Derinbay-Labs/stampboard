@@ -76,6 +76,9 @@ svg { flex: none; }
 .b-head { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: end; padding: 18px 24px 14px; border-bottom: 1px solid var(--board-rule); }
 .brand { display: flex; align-items: baseline; gap: 14px; margin-bottom: 4px; }
 .brand-name { font-weight: 700; font-stretch: 80%; font-size: 15px; letter-spacing: .02em; }
+.brand-mark { width: 20px; height: 20px; margin-right: 8px; vertical-align: -4px; fill: var(--board-ink); }
+.brand-mark rect:first-child { fill: var(--board-2); stroke: var(--board-rule); }
+.brand-mark .stamp { fill: #c23523; }
 .brand-scope { color: var(--board-muted); font-size: 13px; }
 h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-height: 1.02; letter-spacing: -.005em; }
 .sub { margin: 6px 0 0; color: var(--board-muted); font-size: 14px; max-width: 90ch; }
@@ -241,7 +244,7 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
   <section class="board" aria-label="GitHub Actions">
     <div class="b-head">
       <div>
-        <div class="brand"><span class="brand-name" data-t="appName">Stampboard</span><span class="brand-scope" id="scope"></span></div>
+        <div class="brand"><span class="brand-name"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x=".5" y=".5" width="31" height="31" rx="6"/><rect x="6" y="9" width="20" height="4"/><rect x="6" y="15" width="13" height="4"/><rect class="stamp" x="21" y="17" width="7" height="7" transform="rotate(-8 24.5 20.5)"/></svg><span data-t="appName">Stampboard</span></span><span class="brand-scope" id="scope"></span></div>
         <h1 id="headline" data-t="scanning">Scanning GitHub</h1>
         <p class="sub" id="subline" data-t="firstScan">The first scan can take a few seconds.</p>
       </div>
