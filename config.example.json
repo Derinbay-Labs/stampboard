@@ -6,5 +6,6 @@
   "includeArchived": false,
   "sealLabels": [
     "security"
-  ]
+  ],
+  "agentHosts": []
 }

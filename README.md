@@ -13,6 +13,7 @@ monitor (1920×1080) and you can leave it open all day.
 - **Actions board:** running and queued jobs, which runner they are on (self-hosted or GitHub-hosted), and live timers. Filter by runner or repository, and hide stuck runs (queued for over an hour with no jobs). Updates every 10 seconds.
 - **Pull requests:** CI state and review state, with a stamp on the rows that need you (CI broken, changes requested, ready to merge). Updates every minute.
 - **Issues:** labels, assignees and comment counts, with a stamp for the labels you choose (`security` by default).
+- **Agents:** the [Claude Code](https://claude.com/claude-code) sessions running on this machine, and on other machines you list, with each session's active subagents. Shown only when there are any. See [Agents](#agents).
 - **Interface:** English or Turkish, picked from the browser language. Light, dark or automatic theme.
 - **Dependencies:** none. It is one Node file for the server and one HTML file for the page.
 
@@ -70,10 +71,25 @@ Copy `config.example.json` to `config.json` and edit it. Git ignores `config.jso
 | `intervalSeconds` | `10` | How often the Actions board refreshes. The minimum is 5. Pull requests and issues refresh every minute. |
 | `port` | `4747` | The local port. |
 | `sealLabels` | `["security"]` | The issue labels that get a stamp, most important first. |
+| `agentHosts` | `[]` | Other machines whose Claude Code sessions to show, over ssh: `"build-box"` or `{ "name": "mac", "ssh": "me@mac.local" }`. See [Agents](#agents). |
 
 The `OWNERS` (comma-separated) and `PORT` environment variables override the file.
 
 The page's language follows the browser. Add `?lang=en` or `?lang=tr` to the URL to choose one.
+
+## Agents
+
+If you use Claude Code, the panel lists its running sessions: name, status (working or idle), the
+folder, the agent role and the subagents that have not finished. It reads the small status files
+Claude Code keeps under `~/.claude/sessions/` (or `CLAUDE_CONFIG_DIR`) and each subagent's
+`.meta.json`. It never reads a transcript, a prompt or an environment, and session ids stay on the
+server. These files are not a documented Claude Code interface, so a future version may change
+them; the section then stays hidden.
+
+To include another machine, add it to `agentHosts`. Every 30 seconds the server runs
+`ssh -o BatchMode=yes <host> sh -s` and sends a short POSIX shell script that prints the same
+files; the machine needs only `sh`, not Node. ssh must already sign in with a key, because the
+panel never answers a password prompt. A machine that does not answer is shown as unreachable.
 
 ## Security
 
@@ -81,6 +97,7 @@ The page's language follows the browser. Add `?lang=en` or `?lang=tr` to the URL
 - The server reads the GitHub token with `gh auth token` and keeps it to itself. The token never reaches the browser.
 - The page loads nothing from third parties, sends a restrictive Content Security Policy and cannot be embedded in a frame.
 - The panel only reads from GitHub. It never writes.
+- The Agents section reads only Claude Code's session status files, and over ssh only to the machines in `agentHosts`.
 
 ## License
 
@@ -113,6 +130,14 @@ Günlük dosyasının yeri yukarıdaki tabloda.
 
 **Ayarlar:** `config.example.json` dosyasını `config.json` olarak kopyalayın. `owners` boş
 kalırsa `gh` ile oturum açtığınız hesap taranır. Diğer anahtarlar yukarıdaki tabloda.
+
+**Ajanlar:** Claude Code kullanıyorsanız panel çalışan oturumları ve bitmemiş alt ajanlarını
+listeler. Yalnızca `~/.claude/sessions/` altındaki durum dosyalarını ve alt ajanların
+`.meta.json` dosyalarını okur; transcript, prompt ya da ortam değişkeni okumaz. Başka bir makineyi
+eklemek için `agentHosts` listesine yazın (`"build-box"` ya da
+`{ "name": "mac", "ssh": "ben@mac.local" }`). Sunucu 30 saniyede bir anahtarla ssh bağlantısı
+kurar ve küçük bir POSIX shell betiği çalıştırır; karşı makinede Node gerekmez. Yanıt vermeyen
+makine "ulaşılamıyor" olarak gösterilir.
 
 **Güvenlik:** Sunucu yalnızca `127.0.0.1` üzerinde dinler ve yabancı `Host` başlıklarını
 reddeder. GitHub token'ı sunucuda kalır, tarayıcıya hiç gitmez. Panel GitHub'a hiçbir şey yazmaz.
