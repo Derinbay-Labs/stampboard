@@ -1,5 +1,5 @@
 {
-  "name": "github-run-panel",
+  "name": "stampboard",
   "version": "1.0.0",
   "description": "A one-page live view of running and queued GitHub Actions jobs plus open pull requests and issues across your organisations.",
   "private": true,
@@ -7,7 +7,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/derinbay/github-run-panel.git"
+    "url": "git+https://github.com/derinbay/stampboard.git"
   },
   "engines": {
     "node": ">=26"

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Run panel</title>
+<title>Stampboard</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23141310'/%3E%3Crect x='6' y='9' width='20' height='4' fill='%23f4f1ea'/%3E%3Crect x='6' y='15' width='13' height='4' fill='%23f4f1ea'/%3E%3Crect x='21' y='17' width='7' height='7' fill='%23c23523' transform='rotate(-8 24.5 20.5)'/%3E%3C/svg%3E">
 <style>
 @font-face { font-family: Archivo; src: url(/fonts/archivo-latin.woff2) format('woff2'); font-weight: 100 900; font-stretch: 62% 125%; font-display: swap;
@@ -205,6 +205,9 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
 
 .foot { flex: none; align-items: baseline; display: flex; flex-wrap: wrap; gap: 4px 22px; color: var(--muted); font-size: 12px; }
 .foot span { background: var(--paper); }
+.foot .credit { margin-left: auto; }
+.foot a { color: inherit; text-underline-offset: 2px; }
+.foot a:hover { color: var(--ink); }
 
 /* Narrow windows: the page scrolls and columns stack */
 @media (max-width: 1280px), (max-height: 760px) {
@@ -238,7 +241,7 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
   <section class="board" aria-label="GitHub Actions">
     <div class="b-head">
       <div>
-        <div class="brand"><span class="brand-name" data-t="appName">Run panel</span><span class="brand-scope" id="scope"></span></div>
+        <div class="brand"><span class="brand-name" data-t="appName">Stampboard</span><span class="brand-scope" id="scope"></span></div>
         <h1 id="headline" data-t="scanning">Scanning GitHub</h1>
         <p class="sub" id="subline" data-t="firstScan">The first scan can take a few seconds.</p>
       </div>
@@ -293,11 +296,15 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
     get(k) { try { return localStorage.getItem(k); } catch { return null; } },
     set(k, v) { try { localStorage.setItem(k, v); } catch { /* the preference is not kept, nothing else breaks */ } },
   };
+  // Keep the theme and language picked before the rename from Run panel
+  for (const k of ['lang', 'theme']) {
+    if (store.get(`stampboard-${k}`) == null && store.get(`run-panel-${k}`) != null) store.set(`stampboard-${k}`, store.get(`run-panel-${k}`));
+  }
 
   // ---------- Language: Turkish when the browser prefers it, English otherwise ----------
   const STRINGS = {
     tr: {
-      appName: 'Run paneli',
+      appName: 'Stampboard',
       scanning: 'GitHub taranıyor',
       firstScan: 'İlk tarama birkaç saniye sürebilir.',
       connecting: 'Bağlanıyor',
@@ -378,7 +385,7 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
       agNoSessions: 'Ulaşılabilen makinelerde Claude Code oturumu yok.',
     },
     en: {
-      appName: 'Run panel',
+      appName: 'Stampboard',
       scanning: 'Scanning GitHub',
       firstScan: 'The first scan can take a few seconds.',
       connecting: 'Connecting',
@@ -459,9 +466,9 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
       agNoSessions: 'No Claude Code sessions on the reachable hosts.',
     },
   };
-  // ?lang=en or ?lang=tr, then the EN/TR switch (stored in run-panel-lang), then the browser
+  // ?lang=en or ?lang=tr, then the EN/TR switch (stored in stampboard-lang), then the browser
   const asked = new URLSearchParams(location.search).get('lang');
-  const chosen = store.get('run-panel-lang');
+  const chosen = store.get('stampboard-lang');
   const LANG = STRINGS[asked] ? asked : STRINGS[chosen] ? chosen : /^tr\b/i.test((navigator.languages && navigator.languages[0]) || navigator.language || '') ? 'tr' : 'en';
   const L = STRINGS[LANG];
   const LOCALE = LANG === 'tr' ? 'tr-TR' : 'en-US';
@@ -792,7 +799,8 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
     if (data.tookMs != null) parts.push(L.actionsScan(secs.format(data.tookMs / 1000), data.intervalSeconds));
     if (data.work.tookMs != null) parts.push(L.workScan(secs.format(data.work.tookMs / 1000)));
     if (data.skipped) parts.push(L.skipped(data.skipped));
-    $('#foot').innerHTML = parts.map((p) => `<span>${esc(p)}</span>`).join('');
+    $('#foot').innerHTML = parts.map((p) => `<span>${esc(p)}</span>`).join('')
+      + '<span class="credit">Stampboard · <a href="https://derinbay.com" target="_blank" rel="noopener">Derinbay Labs</a></span>';
 
     tick();
   }
@@ -870,20 +878,20 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
     document.querySelectorAll('[data-theme-set]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.themeSet === t)));
   }
   document.querySelectorAll('[data-theme-set]').forEach((b) =>
-    b.addEventListener('click', () => { setTheme(b.dataset.themeSet); store.set('run-panel-theme', b.dataset.themeSet); })
+    b.addEventListener('click', () => { setTheme(b.dataset.themeSet); store.set('stampboard-theme', b.dataset.themeSet); })
   );
   // The strings are applied once at load, so a language change reloads the page
   document.querySelectorAll('[data-lang-set]').forEach((b) => {
     b.setAttribute('aria-pressed', String(b.dataset.langSet === LANG));
     b.addEventListener('click', () => {
       if (b.dataset.langSet === LANG) return;
-      store.set('run-panel-lang', b.dataset.langSet);
+      store.set('stampboard-lang', b.dataset.langSet);
       const url = new URL(location.href);
       url.searchParams.delete('lang');
       location.replace(url);
     });
   });
-  setTheme(['auto', 'light', 'dark'].includes(store.get('run-panel-theme')) ? store.get('run-panel-theme') : 'auto');
+  setTheme(['auto', 'light', 'dark'].includes(store.get('stampboard-theme')) ? store.get('stampboard-theme') : 'auto');
 
   render();
   poll(false);

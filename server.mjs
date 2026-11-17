@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// GitHub Run Panel: live view of running and queued GitHub Actions jobs plus open pull requests and issues.
+// Stampboard: live view of running and queued GitHub Actions jobs plus open pull requests and issues.
 // No dependencies. Signs in with the account from `gh auth token`; the token stays in this process and is
 // never sent to the browser. The server listens on 127.0.0.1 only and rejects foreign Host headers.
 
@@ -42,7 +42,7 @@ if (SERVICE) {
 const config = await loadConfig();
 const API = (process.env.GITHUB_API || 'https://api.github.com').replace(/\/+$/, '');
 const API_VERSION = '2026-03-10';
-const USER_AGENT = 'github-run-panel';
+const USER_AGENT = 'stampboard';
 const stamp = () => new Date().toISOString().slice(11, 19);
 
 // ---------- GitHub API ----------
@@ -691,7 +691,7 @@ let agents = null; // Claude Code sessions, see agents.mjs
 
 server.listen(config.port, '127.0.0.1', () => {
   const url = `http://localhost:${config.port}`;
-  console.log(`GitHub Run Panel ready: ${url}${DEMO ? '  (demo data)' : ''}`);
+  console.log(`Stampboard ready: ${url}${DEMO ? '  (demo data)' : ''}`);
   if (SERVICE) {
     writeFileSync(pidFile(), String(process.pid));
     process.on('exit', () => {

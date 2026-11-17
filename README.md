@@ -1,12 +1,12 @@
-# GitHub Run Panel
+# Stampboard
 
 A one-page live view of your GitHub work: running and queued Actions jobs at the top, and every open
 pull request and issue across your accounts and organisations below. It is built for a desktop
 monitor (1920×1080) and you can leave it open all day.
 
-![Run panel, light theme](docs/screenshot-light.png)
+![Stampboard, light theme](docs/screenshot-light.png)
 
-![Run panel, dark theme](docs/screenshot-dark.png)
+![Stampboard, dark theme](docs/screenshot-dark.png)
 
 *The screenshots show the built-in demo data.*
 
@@ -26,8 +26,8 @@ monitor (1920×1080) and you can leave it open all day.
 
 ```sh
 gh auth login
-git clone https://github.com/derinbay/github-run-panel.git
-cd github-run-panel
+git clone https://github.com/derinbay/stampboard.git
+cd stampboard
 npm start
 ```
 
@@ -52,12 +52,15 @@ None of these need administrator rights.
 
 | OS | Registration | Log |
 |---|---|---|
-| Windows | `github-run-panel.vbs` in the Startup folder | `%LOCALAPPDATA%\github-run-panel\server.log` |
-| macOS | LaunchAgent `~/Library/LaunchAgents/io.github.github-run-panel.plist` | `~/Library/Logs/github-run-panel/server.log` |
-| Linux | systemd user unit `github-run-panel.service` | `~/.local/state/github-run-panel/server.log` |
+| Windows | `stampboard.vbs` in the Startup folder | `%LOCALAPPDATA%\stampboard\server.log` |
+| macOS | LaunchAgent `~/Library/LaunchAgents/com.derinbay.stampboard.plist` | `~/Library/Logs/stampboard/server.log` |
+| Linux | systemd user unit `stampboard.service` | `~/.local/state/stampboard/server.log` |
 
 Every login item points at this folder and at the Node binary you ran it with. If you move the
 folder or change your Node install, run `npm run install-service` again.
+
+The project was called GitHub Run Panel until November 2026. If you installed it under that name,
+run `npm run install-service` once more: it removes the old login item and starts Stampboard.
 
 ## Configuration
 
@@ -101,7 +104,7 @@ panel never answers a password prompt. A machine that does not answer is shown a
 
 ## License
 
-[MIT](LICENSE). The bundled fonts, Archivo and JetBrains Mono, are under the
+[MIT](LICENSE). Made by [Derinbay Labs](https://derinbay.com). The bundled fonts, Archivo and JetBrains Mono, are under the
 [SIL Open Font License 1.1](fonts/OFL.txt).
 
 ---
@@ -116,8 +119,8 @@ arayüz Türkçe açılır; sağ üstteki EN/TR düğmesiyle değiştirilebilir.
 **Gerekenler:** Node.js 26 veya üstü ve oturum açılmış GitHub CLI (`gh auth login`).
 
 ```sh
-git clone https://github.com/derinbay/github-run-panel.git
-cd github-run-panel
+git clone https://github.com/derinbay/stampboard.git
+cd stampboard
 npm start                   # http://localhost:4747 adresini açar
 npm run demo                # GitHub hesabı olmadan örnek verilerle dener
 ```
@@ -126,7 +129,8 @@ npm run demo                # GitHub hesabı olmadan örnek verilerle dener
 açmadan başlatacak şekilde kaydeder. Windows'ta Başlangıç klasörünü, macOS'ta bir LaunchAgent'ı,
 Linux'ta bir systemd kullanıcı birimini kullanır ve yönetici izni istemez. Diğer komutlar
 `npm run status`, `npm run stop`, `npm run start-service` ve `npm run uninstall-service`'dir.
-Günlük dosyasının yeri yukarıdaki tabloda.
+Günlük dosyasının yeri yukarıdaki tabloda. Eski adı (GitHub Run Panel) ile kurduysanız
+`npm run install-service` komutunu bir kez daha çalıştırın; eski kaydı kaldırır.
 
 **Ayarlar:** `config.example.json` dosyasını `config.json` olarak kopyalayın. `owners` boş
 kalırsa `gh` ile oturum açtığınız hesap taranır. Diğer anahtarlar yukarıdaki tabloda.

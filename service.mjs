@@ -11,8 +11,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { appDir, loadConfig, logFile, pidFile, stateDir } from './config.mjs';
 
-const NAME = 'github-run-panel';
-const LABEL = 'io.github.github-run-panel';
+const NAME = 'stampboard';
+const LABEL = 'com.derinbay.stampboard';
 const node = process.execPath;
 const server = path.join(appDir, 'server.mjs');
 const home = os.homedir();
@@ -21,12 +21,32 @@ const { port } = await loadConfig();
 const url = `http://localhost:${port}`;
 const PATH = ['/opt/homebrew/bin', '/usr/local/bin', '/usr/bin', '/bin', path.dirname(node)].join(':');
 
-const files = {
-  win32: path.join(process.env.APPDATA || path.join(home, 'AppData', 'Roaming'), 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Startup', `${NAME}.vbs`),
-  darwin: path.join(home, 'Library', 'LaunchAgents', `${LABEL}.plist`),
-  linux: path.join(process.env.XDG_CONFIG_HOME || path.join(home, '.config'), 'systemd', 'user', `${NAME}.service`),
-};
-const registration = files[platform];
+const registrationOf = (name, label) => ({
+  win32: path.join(process.env.APPDATA || path.join(home, 'AppData', 'Roaming'), 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Startup', `${name}.vbs`),
+  darwin: path.join(home, 'Library', 'LaunchAgents', `${label}.plist`),
+  linux: path.join(process.env.XDG_CONFIG_HOME || path.join(home, '.config'), 'systemd', 'user', `${name}.service`),
+})[platform];
+const registration = registrationOf(NAME, LABEL);
+
+// The project was called GitHub Run Panel before; install and uninstall remove a login item made under that name.
+const OLD_NAME = 'github-run-panel';
+const OLD_LABEL = 'io.github.github-run-panel';
+function removeOldInstall() {
+  const file = registrationOf(OLD_NAME, OLD_LABEL);
+  if (!existsSync(file)) return false;
+  if (platform === 'darwin') run('launchctl', ['bootout', `gui/${uid()}/${OLD_LABEL}`], true);
+  if (platform === 'linux') {
+    run('systemctl', ['--user', 'disable', '--now', `${OLD_NAME}.service`], true);
+  } else {
+    try {
+      const pid = Number(readFileSync(path.join(path.dirname(stateDir()), OLD_NAME, 'server.pid'), 'utf8').trim());
+      if (pid) process.kill(pid, 'SIGTERM');
+    } catch { /* not running */ }
+  }
+  rmSync(file, { force: true });
+  console.log(`Removed the old login item: ${file}`);
+  return true;
+}
 if (!registration) {
   console.error(`Background mode is not supported on ${platform}. Run "npm start" instead.`);
   process.exit(1);
@@ -79,7 +99,7 @@ function registrationText() {
 `;
   }
   return `[Unit]
-Description=GitHub Run Panel
+Description=Stampboard
 After=network-online.target
 
 [Service]
@@ -174,6 +194,7 @@ async function stop() {
 async function install() {
   mkdirSync(path.dirname(registration), { recursive: true });
   mkdirSync(stateDir(), { recursive: true });
+  if (removeOldInstall()) await waitFor(false, 5); // let the old server free the port
   if (platform === 'darwin') run('launchctl', ['bootout', `gui/${uid()}/${LABEL}`], true); // reload a changed plist
   writeFileSync(registration, registrationText());
   if (platform === 'linux') {
@@ -185,6 +206,7 @@ async function install() {
 }
 
 async function uninstall() {
+  removeOldInstall();
   if (platform === 'darwin') run('launchctl', ['bootout', `gui/${uid()}/${LABEL}`], true);
   if (platform === 'linux') run('systemctl', ['--user', 'disable', `${NAME}.service`], true);
   await stop();
