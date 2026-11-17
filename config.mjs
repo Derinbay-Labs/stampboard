@@ -37,9 +37,9 @@ export async function loadConfig() {
 // Where the background service keeps its PID and log file.
 export function stateDir() {
   const home = os.homedir();
-  if (process.platform === 'win32') return path.join(process.env.LOCALAPPDATA || path.join(home, 'AppData', 'Local'), 'github-run-panel');
-  if (process.platform === 'darwin') return path.join(home, 'Library', 'Logs', 'github-run-panel');
-  return path.join(process.env.XDG_STATE_HOME || path.join(home, '.local', 'state'), 'github-run-panel');
+  if (process.platform === 'win32') return path.join(process.env.LOCALAPPDATA || path.join(home, 'AppData', 'Local'), 'stampboard');
+  if (process.platform === 'darwin') return path.join(home, 'Library', 'Logs', 'stampboard');
+  return path.join(process.env.XDG_STATE_HOME || path.join(home, '.local', 'state'), 'stampboard');
 }
 
 export const pidFile = () => path.join(stateDir(), 'server.pid');
