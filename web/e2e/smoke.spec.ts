@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 const CLONE =
-  "git clone https://github.com/derinbay/stampboard.git\ncd stampboard && npm start";
+  "git clone https://github.com/Derinbay-Labs/stampboard.git\ncd stampboard && npm start";
 
 test.describe("landing smoke", () => {
   for (const [locale, h1] of [

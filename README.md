@@ -26,7 +26,7 @@ monitor (1920×1080) and you can leave it open all day.
 
 ```sh
 gh auth login
-git clone https://github.com/derinbay/stampboard.git
+git clone https://github.com/Derinbay-Labs/stampboard.git
 cd stampboard
 npm start
 ```
@@ -119,7 +119,7 @@ arayüz Türkçe açılır; sağ üstteki EN/TR düğmesiyle değiştirilebilir.
 **Gerekenler:** Node.js 26 veya üstü ve oturum açılmış GitHub CLI (`gh auth login`).
 
 ```sh
-git clone https://github.com/derinbay/stampboard.git
+git clone https://github.com/Derinbay-Labs/stampboard.git
 cd stampboard
 npm start                   # http://localhost:4747 adresini açar
 npm run demo                # GitHub hesabı olmadan örnek verilerle dener
