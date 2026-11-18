@@ -7,7 +7,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/derinbay/stampboard.git"
+    "url": "git+https://github.com/Derinbay-Labs/stampboard.git"
   },
   "engines": {
     "node": ">=26"
