@@ -13,7 +13,8 @@ import { appDir, loadConfig, logFile, pidFile, stateDir } from './config.mjs';
 
 const NAME = 'stampboard';
 const LABEL = 'com.derinbay.stampboard';
-const node = process.execPath;
+// Homebrew's Cellar path names the version and `brew upgrade` deletes it; the opt/ link follows upgrades.
+const node = process.execPath.replace(/\/Cellar\/([^/]+)\/[^/]+\//, '/opt/$1/');
 const server = path.join(appDir, 'server.mjs');
 const home = os.homedir();
 const platform = process.platform;
