@@ -13,8 +13,11 @@ import { appDir, loadConfig, logFile, pidFile, stateDir } from './config.mjs';
 
 const NAME = 'stampboard';
 const LABEL = 'com.derinbay.stampboard';
-// Homebrew's Cellar path names the version and `brew upgrade` deletes it; the opt/ link follows upgrades.
-const node = process.execPath.replace(/\/Cellar\/([^/]+)\/[^/]+\//, '/opt/$1/');
+// A versioned install path vanishes on upgrade. Homebrew's opt/ link and mise's installs/node/<major> link
+// follow upgrades (mise: `mise upgrade`; company#529), so the login item names those instead.
+const node = process.execPath
+  .replace(/\/Cellar\/([^/]+)\/[^/]+\//, '/opt/$1/')
+  .replace(/(\/mise\/installs\/node)\/(\d+)\.[^/]+\//, '$1/$2/');
 const server = path.join(appDir, 'server.mjs');
 const home = os.homedir();
 const platform = process.platform;
