@@ -60,7 +60,7 @@ controls live and what "gather" does.
 |---|---|---|---|---|
 | **1. Corner pile** (recommended) | [light EN](sticky-notes/mockups/option-1-light.html) · [dark TR](sticky-notes/mockups/option-1-dark.html) | light: [spread](sticky-notes/checks/option-1-light-scattered-1633x930.png) · [gathered](sticky-notes/checks/option-1-light-gathered-1633x930.png); dark: [spread](sticky-notes/checks/option-1-dark-scattered-1633x930.png) · [gathered](sticky-notes/checks/option-1-dark-gathered-1633x930.png) | One press gathers everything into one predictable 240px column in the bottom-right corner. Every note stays on the page and its title stays readable. The controls live in the footer, which no section-resize option folds or moves. Adds no component beyond the note. | The pile covers the right end of the Issues ledger: ages and seals of the bottom rows. Only the front note's text is readable in the pile; the others show their title line. The footer buttons are small text (17px visual, 44px hit area). |
 | **2. Board line-up** | [light EN](sticky-notes/mockups/option-2-light.html) · [dark TR](sticky-notes/mockups/option-2-dark.html) | light: [spread](sticky-notes/checks/option-2-light-scattered-1633x930.png) · [lined up](sticky-notes/checks/option-2-light-gathered-1633x930.png); dark: [spread](sticky-notes/checks/option-2-dark-scattered-1633x930.png) · [lined up](sticky-notes/checks/option-2-dark-gathered-1633x930.png) | Every gathered note is fully readable, side by side. Gathering can be undone at any time with **Put back**, which returns every note to where it was. The controls sit with the board's other tools. | The row covers the board's runner and time columns, the live data the wallboard exists for. The tools row grows by about 270px, so the headline loses that width. If #72 picks the Shelf, the two buttons must move to the shelf with the board's tools. |
-| **3. Edge drawer** | [light EN](sticky-notes/mockups/option-3-light.html) · [dark TR](sticky-notes/mockups/option-3-dark.html) | light: [spread](sticky-notes/checks/option-3-light-scattered-1633x930.png) · [drawer](sticky-notes/checks/option-3-light-gathered-1633x930.png); dark: [spread](sticky-notes/checks/option-3-dark-scattered-1633x930.png) · [drawer](sticky-notes/checks/option-3-dark-gathered-1633x930.png) | Gathering clears the page completely once the drawer is closed. The drawer lists every note at full size and scrolls, so it holds any number. Nothing depends on the section layout. | Gathered notes are out of sight when the drawer is closed, which works against "write thoughts where I look". The open drawer covers a 288px strip on the right. The tab overlaps 20px of the sheets' right edge. It adds two components (tab and drawer) and drawer focus handling. |
+| **3. Edge drawer** | [light EN](sticky-notes/mockups/option-3-light.html) · [dark TR](sticky-notes/mockups/option-3-dark.html) | light: [spread](sticky-notes/checks/option-3-light-scattered-1633x930.png) · [drawer](sticky-notes/checks/option-3-light-gathered-1633x930.png); dark: [spread](sticky-notes/checks/option-3-dark-scattered-1633x930.png) · [drawer](sticky-notes/checks/option-3-dark-gathered-1633x930.png) | Gathering clears the page completely once the drawer is closed. The drawer lists every note at full size and scrolls, so it holds any number. It does not depend on the section layout; once #72 ships, the fixed tab can sit over a right-edge spine or a head's corner button, so its vertical place may need a rule. | Gathered notes are out of sight when the drawer is closed, which works against "write thoughts where I look". The open drawer covers a 288px strip on the right. The tab overlaps 20px of the sheets' right edge. It adds two components (tab and drawer) and drawer focus handling. |
 
 **Recommended default: Option 1.** It is the request taken literally: notes live on the page, and
 one press puts them all in one place where they stay visible. The pile costs the least space of
@@ -82,17 +82,19 @@ four notes are piled and focus is on Gather notes.
   count. Ink on paper at 12px/600, 17px tall like the footer line, with a 44px hit area that
   reaches 15px up and 12px down to the viewport edge. The footer keeps its 17px height (measured).
 - **Where a new note opens:** at the front of the pile spot: 24px from the right edge, its bottom
-  36px above the viewport bottom, just above the footer line. A new note on top of the pile is
+  44px above the viewport bottom, clear of the footer buttons' hit area. A new note on top of the pile is
   simply the pile's newest card; the owner drags it out if he wants it elsewhere.
 - **Gather:** every note moves to the pile in the bottom-right corner, at `right: 24px`. The front
-  note's bottom is 36px above the viewport bottom. Each older note sits 36px higher, so its header
+  note's bottom is 44px above the viewport bottom. Each older note sits 36px higher, so its header
   (Move, title, Delete) shows above the next one. The front note is the one touched last; the pile
   keeps the notes' z-order.
 - **Pile size:** `216 + (n − 1) × 36` px tall. The pile top never goes above 148px, which is below
-  the board's tools row. So at 1920x1080 up to 19 notes pile at a 36px step, and at 1633x930 up to
-  15. Beyond that the step shrinks evenly to fit, down to 10.8px for the 50-note maximum at 930px
-  tall. Below a 20px step the titles of the back notes are hidden, and the count on Gather notes
-  still says how many there are.
+  the board's tools row. So at 1920x1080 up to 19 notes fit in one pile column at the 36px step, and at 1633x930
+  up to 15. The step never shrinks, so every back note's header (Move, title, Delete) stays fully
+  exposed. Further notes start a second column 252px to the left, then a third, filled the same
+  way: the 50-note maximum takes 3 columns at 1080px tall and 4 at 930px.
+- **With #72's Shelf:** if the Shelf wins, the pile's bottom offset adds the shelf line's height,
+  so the pile sits above the shelf, not on it.
 - **What the pile covers:** at 1920x1080 with 4 notes, a 240x324 block over the right end of the
   Issues ledger (its age and seal columns) and the bottom-right corner of the Agents sheet.
 - **After gathering:** the pile positions become the notes' stored positions. Undo, offered for
@@ -109,7 +111,7 @@ the four notes stand in a row under the board head, and focus is on Put back.
   **New note** and **Line up notes** with the mono count. After a line-up, Line up notes is
   replaced by **Put back** (back-arrow icon) in the same place. The tools row grows from 432px to
   700px (EN) and from 467px to 706px (TR). The headline keeps one line (41px tall) at 1633px wide (measured:
-  813px wide in TR).
+  807px wide in TR).
 - **Where a new note opens:** in the first free line-up slot, which is the rightmost slot no note
   overlaps.
 - **Gather (line up):** the notes stand side by side under the board head, top edge at 144px, 12px
@@ -231,7 +233,9 @@ drawer is open with the four notes in it, and focus is on its close button.
 - A window narrower or shorter than a note plus margins (256x232px) shows the note at the 8px
   margin.
 - The gathered places are defined from the edges (section 4), so they hold at any size. The two
-  mockup sizes show this: the same file renders at 1920x1080 and 1633x930 with every note in view.
+  mockup sizes show this: the same file renders at 1920x1080 and 1633x930 with every note on the
+  page in view. Notes inside Option 3's drawer are in a scrolling list, so the fourth one is below
+  the fold of the drawer at both sizes.
 
 ### 5.7 Coexistence with section collapse and expand (#65, decision #72)
 
@@ -257,7 +261,7 @@ not added; see section 12.
 |---|---|---|
 | Empty (no notes) | Nothing renders; the page is unchanged. | New note enabled. Gather shows count 0 and is disabled with "No notes yet" (Option 3's tab still opens an empty drawer that says "No notes yet. New note adds one."). |
 | Loading | Browser storage: notes render with the page, before the first GitHub scan. File store: notes appear when the local read returns; until then New note is disabled for at most that read. | Gather disabled until loaded. |
-| Error: storage unavailable or full | The note keeps its text in memory and its header shows a seal-red "Not saved" with a warning icon (not colour alone). Saving retries on the next edit. Nothing typed is dropped silently. | The status line says "Notes can't be saved on this machine. Copy the text before closing the tab." and stays until a save succeeds. |
+| Error: storage unavailable or full | The note keeps its text in memory and its header shows "Not saved" with a warning icon, in `--note-ink` (`--seal` on `--note` is only 4.3:1 light and 4.1:1 dark, below 4.5:1). Saving retries on the next edit. Nothing typed is dropped silently. | The status line says "Notes can't be saved on this machine. Copy the text before closing the tab." and stays until a save succeeds. |
 | Partial data | A stored note with an invalid position is clamped (section 5.6). An unreadable record is skipped and kept unchanged in storage. | Count excludes skipped records. |
 | Offline (GitHub unreachable) | Notes work fully: they never depend on the GitHub scan. | Unchanged. With the file store and the local server down: the Error row. |
 | Section folded or enlarged (#72) | Unchanged (section 5.7). | Unchanged. |
@@ -300,7 +304,7 @@ The section sizes match the default page exactly, so the notes add nothing to th
 |---|---|---|---|---|---|
 | Default 1920x1080 (master, demo data) | 526 | 246 | 210 | 17 | — |
 | Default 1633x930 | 402 | 246 | 184 | 17 | — |
-| Every option, both states, 1920x1080 | 526 | 246 | 210 | 17 | all inside the viewport, each on top at its header (`elementFromPoint`) |
+| Every option, both states, 1920x1080 | 526 | 246 | 210 | 17 | every note on the page inside the viewport and on top at its header (`elementFromPoint`); Option 3's open drawer scrolls its 4th note (expected) |
 | Every option, both states, 1633x930 | 402 | 246 | 184 | 17 | the same; Option 3's open drawer scrolls its 4th note (expected) |
 
 - Notes over sections (spread state): A and B over the board, C over the Agents sheet and the Pull
@@ -359,7 +363,8 @@ The count `n` uses the page's `Intl.NumberFormat` (`tr-TR` or `en-US`).
   | Option 1 footer buttons (`--ink` on `--paper`) | 14.4:1 | 14.1:1 |
   | Option 3 tab label (`--ink` on `--sheet`); count (`--muted` on `--sheet`) | ≥ 15:1; 6.0:1 | ≥ 12:1; 6.2:1 |
 
-- **Target size:** Move and Delete are 32x32px with a 44x44px hit area. Option 1's footer buttons
+- **Target size:** Move and Delete are 32x32px with a 44x44px hit area (in Option 1's pile, see
+  section 12). Option 1's footer buttons
   are 17px tall with a 44px hit area (15px up, 12px down to the viewport edge). Option 2's board
   buttons are the existing 32px `.btn`s, as Refresh is today. Option 3's tab parts are 44px wide.
 - **Not colour alone:** "Not saved" is a word and an icon. A lifted note has a stronger shadow and
@@ -424,5 +429,12 @@ Web only, on desktop evergreen browsers. Pointer Events cover mouse, pen and tou
 - **Option 1 footer hit area:** 44px only because the footer sits 12px above the viewport edge; if
   #72 or a later change moves the footer up, the hit area must be rechecked. Decides: ux-designer
   at implementation review.
+- **Pile header targets (Option 1):** in the pile, each back note shows a 36px header strip; its
+  32px Move and Delete are fully visible, but their 44px hit area is cut to about 32x38px by the
+  note in front. That is above WCAG 2.5.8's 24px and below the house 44px bar. Decides:
+  ux-designer at implementation review.
+- **Small buttons in Options 2 and 3:** Option 2's board buttons are the existing 32px `.btn`
+  height, and the drawer's icon buttons are 30px wide with a 34x44px hit area. Both are above
+  WCAG's 24px and below the house 44px bar. Decides: ux-designer, if the CEO picks either option.
 - **Option 3 tab overlap:** the 44px tab covers 20px of the sheets' right edge, which in the
   default layout is row padding, not text. Decides: ux-designer, if the CEO picks Option 3.
