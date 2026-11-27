@@ -461,7 +461,8 @@ async function notesTwoPages() {
     assert.deepEqual(await texts(a), ['Sample note 0 edited', 'Sample note B'], 'A shows the note made in B');
     // a delete in one page does not come back from the other
     const del = a.locator('.note', { has: a.locator('.n-del[aria-label="Delete note: Sample note B"]') }).locator('.n-del');
-    if (await del.count()) await del.click();
+    assert.equal(await del.count(), 1, 'A has a Delete button for the note made in B');
+    await del.click();
     await a.waitForTimeout(200);
     await b.waitForTimeout(200);
     assert.deepEqual(await texts(b), ['Sample note 0 edited'], 'the delete in A reaches B');
@@ -469,6 +470,13 @@ async function notesTwoPages() {
     await b.waitForTimeout(100);
     assert.deepEqual(await stored(b), ['Sample note 0 edited'], 'B does not bring the deleted note back');
     assert.deepEqual(await texts(a), ['Sample note 0 edited'], 'A does not get it back either');
+    // Undo in A after B saw the delete: B adopts the restored note and its next write keeps it
+    await a.click('#nStatus .n-undo');
+    await a.waitForTimeout(200);
+    assert.deepEqual(await texts(b), ['Sample note 0 edited', 'Sample note B'], 'B shows the note A restored');
+    await b.click('.note[aria-label="Note: Sample note B"] .n-head');
+    await b.waitForTimeout(100);
+    assert.deepEqual(await stored(b), ['Sample note 0 edited', 'Sample note B'], 'a touch in B keeps the note A restored');
     console.log('ok   notes two pages');
   } catch (err) {
     failed++;

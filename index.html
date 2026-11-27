@@ -1643,12 +1643,12 @@ body.placing, body.placing * { cursor: crosshair !important; }
     noteEls.get(n.id).querySelector('.n-text').focus();
   }
 
-  function removeNote(n) {
+  function removeNote(n) { // a delete made in this tab; a note another tab deleted is only dropped, so its Undo there can bring it back
     clearTimeout(saveTimer); saveTimer = 0;
+    gone.add(n.id);
     dropNote(n);
   }
   function dropNote(n) {
-    gone.add(n.id);
     if (placing === n.id) stopPlacing();
     const el = noteEls.get(n.id);
     if (el) el.remove();
