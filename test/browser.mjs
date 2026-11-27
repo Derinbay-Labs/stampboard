@@ -217,8 +217,8 @@ async function notesRun(width, height, scheme, lang = 'en') {
   const logs = [];
   page.on('console', (m) => logs.push(m.text()));
   const T = lang === 'tr'
-    ? { newNote: 'Yeni not', gather: 'Notları topla', move: (t) => `Notu taşı: ${t}`, menu: (t) => `Not seçenekleri: ${t}`, group: (t) => `Not: ${t}`, deleted: 'Not silindi.', gathered: (n) => `${n} not toplandı.`, region: 'Notlar', placed: 'Not yerleşti.' }
-    : { newNote: 'New note', gather: 'Gather notes', move: (t) => `Move note: ${t}`, menu: (t) => `Note options: ${t}`, group: (t) => `Note: ${t}`, deleted: 'Note deleted.', gathered: (n) => `${n} notes gathered.`, region: 'Notes', placed: 'Note placed.' };
+    ? { newNote: 'Yeni not', gather: 'Notları topla', hint: 'Alt+ok tuşları taşır · Shift daha uzağa', moveItem: 'Taşı', menu: (t) => `Not seçenekleri: ${t}`, group: (t) => `Not: ${t}`, deleted: 'Not silindi.', gathered: (n) => `${n} not toplandı.`, region: 'Notlar', placed: 'Not yerleşti.' }
+    : { newNote: 'New note', gather: 'Gather notes', hint: 'Alt+arrow keys move · Shift moves farther', moveItem: 'Move', menu: (t) => `Note options: ${t}`, group: (t) => `Note: ${t}`, deleted: 'Note deleted.', gathered: (n) => `${n} notes gathered.`, region: 'Notes', placed: 'Note placed.' };
   try {
     await page.goto(`http://localhost:${port}/?lang=${lang}`);
     await page.waitForSelector('#prList .entry');
@@ -246,8 +246,8 @@ async function notesRun(width, height, scheme, lang = 'en') {
     [a] = await noteRects(page);
     assert.equal(a.text, 'Sample note A', 'the note survives a reload');
     near(a.right, width - 24, 0.5, `${tag} reload keeps the place`);
-    assert.equal(await page.getAttribute('.n-move', 'aria-label'), T.move('Sample note A'));
-    assert.equal(await page.getAttribute('.n-menu-btn', 'aria-label'), T.menu('Sample note A'));
+    assert.equal(await page.locator('.note button').count(), 0, 'no button inside a note (#83)');
+    assert.equal(await page.evaluate(() => { const t = document.querySelector('.note .n-text'); return document.getElementById(t.getAttribute('aria-describedby')).textContent; }), T.hint, 'the move hint is the textarea description');
     assert.equal(await page.textContent('#gatherNotes'), `${T.gather}1`);
     assert.ok(!(await page.title()).includes('Sample'), 'the title never carries note text');
 
@@ -277,33 +277,41 @@ async function notesRun(width, height, scheme, lang = 'en') {
     near(a.left % 24, 0, 0.01, 'dragged left on the grid'); near(a.top % 24, 0, 0.01, 'dragged top on the grid');
     assert.ok(a.left < width - 264 - 250 && a.top < height - 260 - 150, 'it moved away from the pile');
 
-    // Move, then click where it goes
-    const moveBtn = page.locator('.note .n-move');
-    await moveBtn.click();
-    assert.equal(await moveBtn.getAttribute('aria-pressed'), 'true');
+    // Move from the note menu, then click where it goes
+    const ta0 = page.locator('.note .n-text');
+    await page.click('.note .n-head', { button: 'right' });
+    assert.equal(await page.locator('.n-menu [data-act="move"]').textContent(), T.moveItem);
+    await page.click('.n-menu [data-act="move"]');
+    assert.equal(await page.evaluate(() => document.body.classList.contains('placing')), true);
     assert.ok((await page.textContent('#nStatus')).length > 10, 'the status says where to click');
     await page.mouse.click(500, 400);
     [a] = await noteRects(page);
     assert.deepEqual([a.left, a.top], [504, 408], 'placed by one click, snapped');
-    assert.equal(await moveBtn.getAttribute('aria-pressed'), 'false');
-    await moveBtn.click();
+    assert.equal(await page.evaluate(() => document.body.classList.contains('placing')), false);
+    await page.click('.note .n-head', { button: 'right' });
+    await page.click('.n-menu [data-act="move"]');
     await page.keyboard.press('Escape');
-    assert.equal(await moveBtn.getAttribute('aria-pressed'), 'false', 'Escape cancels');
+    assert.equal(await page.evaluate(() => document.body.classList.contains('placing')), false, 'Escape cancels');
+    assert.equal(await page.evaluate(() => document.activeElement.classList.contains('n-text')), true, 'Escape focuses the note text');
     [a] = await noteRects(page);
     assert.deepEqual([a.left, a.top], [504, 408]);
 
-    // Keyboard: arrows move one cell, Shift four
-    await moveBtn.focus();
+    // Keyboard: Alt+arrows move one cell, Alt+Shift four; plain arrows only move the caret
+    await ta0.focus();
     await page.keyboard.press('ArrowRight');
     await page.keyboard.press('ArrowDown');
     [a] = await noteRects(page);
-    assert.deepEqual([a.left, a.top], [528, 432], 'one cell per arrow');
-    await page.keyboard.press('Shift+ArrowLeft');
+    assert.deepEqual([a.left, a.top], [504, 408], 'plain arrows do not move the note');
+    await page.keyboard.press('Alt+ArrowRight');
+    await page.keyboard.press('Alt+ArrowDown');
+    [a] = await noteRects(page);
+    assert.deepEqual([a.left, a.top], [528, 432], 'one cell per Alt+arrow');
+    await page.keyboard.press('Alt+Shift+ArrowLeft');
     [a] = await noteRects(page);
     assert.equal(a.left, 528 - 96, 'Shift moves four cells');
     await page.waitForTimeout(1200);
     assert.equal((await page.textContent('#notesLive')).trim(), T.placed);
-    for (let i = 0; i < 20; i++) await page.keyboard.press('Shift+ArrowLeft');
+    for (let i = 0; i < 20; i++) await page.keyboard.press('Alt+Shift+ArrowLeft');
     [a] = await noteRects(page);
     assert.equal(a.left, 8, 'the note cannot leave the viewport');
     await page.waitForTimeout(500);
@@ -352,8 +360,8 @@ async function notesRun(width, height, scheme, lang = 'en') {
     assert.deepEqual(afterReload.map((r) => [r.text, r.left, r.top, r.angle]), messy.map((r) => [r.text, r.left, r.top, r.angle]), 'the messy pile survives a reload exactly: positions and angles');
 
     // Delete with Undo; the footer stays one line
-    await page.locator('.note .n-menu-btn').first().focus();
-    await page.keyboard.press('Enter');
+    await page.locator('.note .n-text').first().focus();
+    await page.keyboard.press('Shift+F10');
     await page.click('.n-menu [data-act="delete"]');
     assert.equal(await page.textContent('#nStatus .n-msg'), T.deleted);
     assert.equal((await noteRects(page)).length, 3);
@@ -571,12 +579,12 @@ async function notesRealism(scheme = 'light', reduced = false) {
     assert.equal(await menuOpen(), 1);
     await page.keyboard.press('Escape');
     assert.equal(await inNote('m3'), true);
-    await note('m3').locator('.n-menu-btn').focus();
-    await page.keyboard.press('Enter');
-    assert.equal(await menuOpen(), 1, 'the Note options button opens the menu too');
-    assert.equal(await page.locator('.n-menu-btn[aria-expanded="true"]').count(), 1);
+    await note('m3').locator('.n-text').focus();
+    await page.keyboard.press('Shift+F10');
+    assert.equal(await menuOpen(), 1, 'Shift+F10 opens the menu from the textarea');
     await page.keyboard.press('Escape');
-    assert.equal(await page.evaluate(() => document.activeElement.classList.contains('n-menu-btn')), true, 'focus returns to the button');
+    assert.equal(await page.evaluate(() => document.activeElement.classList.contains('n-text')), true, 'focus returns to the textarea');
+    assert.equal(await page.locator('.note button').count(), 0, 'no button inside any note, in any colour or state (#83)');
 
     // Delete from the menu, then Undo brings the note back with its look
     await rightClick('m1');
@@ -711,8 +719,8 @@ async function notesTwoPages() {
     // a delete in one page does not come back from the other
     const bn = a.locator('.note[aria-label="Note: Sample note B"]');
     assert.equal(await bn.count(), 1, 'A shows the note made in B');
-    await bn.locator('.n-menu-btn').focus(); // the gathered pile hides it under another note: the keyboard path reaches it
-    await a.keyboard.press('Enter');
+    await bn.locator('.n-text').focus(); // the gathered pile hides it under another note: the keyboard path reaches it
+    await a.keyboard.press('Shift+F10');
     await a.click('.n-menu [data-act="delete"]');
     await a.waitForTimeout(200);
     await b.waitForTimeout(200);

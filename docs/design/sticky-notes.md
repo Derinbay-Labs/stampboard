@@ -19,6 +19,15 @@ implementation (#68) and the options debate, and the lines they carry that #81 r
 "(#81)" below. Section 5.1 (privacy), the 50-note limit, corner anchoring, clamping, undo, the
 cross-tab merge, TR/EN and light/dark are unchanged.
 
+**#83: no buttons on a note.** The Move button and the Note options (`⋯`) button are gone; the 28px
+header is a bare drag strip (it keeps its height; "Not saved" stays in it). Dragging the strip moves
+a note and right-click, the context-menu key or Shift+F10 (from the text) opens its menu. **Move** is an
+item in that menu (TR "Taşı", EN "Move"): it picks the note up, the next click places it, Escape
+cancels and focuses the text (WCAG 2.5.7). Alt+arrow from the text moves one grid cell and
+Alt+Shift+arrow four; plain arrows still move the caret. The move hint is a visually hidden
+description of the text area. Where sections below still name the Move or Note options buttons they
+are marked "(#83)" and this paragraph wins.
+
 **Paper.** Plain paper with no ruled lines. The top 20% is flat with no shadow; the bottom edge
 and the two bottom corners lift, with a soft curved shadow (a `box-shadow` plus two tipped
 pseudo-element shadows). A very faint SVG `feTurbulence` grain (10% opacity, multiply) lies on the
@@ -40,8 +49,7 @@ bullet line (or Ctrl+Enter in it) strikes it through like pencil; again clears i
 edits, undo and the cross-tab merge: a bullet line starts with `• `, an open one; a struck
 line starts with `✓ `. `- ` and `* ` are accepted on load and shown as bullets.
 
-**Right-click menu.** Right-click on a note, Shift+F10 or the context-menu key in it, or the
-**Note options** button in its header (which replaces the old Delete button) opens a `role=menu`
+**Right-click menu.** Right-click on a note, Shift+F10 or the context-menu key in it (#83: the Note options button is gone) opens a `role=menu`
 at the pointer or the note, kept 8px inside the screen. From the top:
 
 1. Round swatches, `menuitemradio` with names: Classic Yellow, Pastel Pink, Mint Green, Light
@@ -56,7 +64,7 @@ at the pointer or the note, kept 8px inside the screen. From the top:
 6. **Delete note**, then the usual Undo in the status line.
 
 Arrow keys, Home and End move through the menu; Escape or Tab close it. Choosing a colour, a font,
-Pin or Delete closes it; focus returns to the note (or to the Note options button that opened it).
+Pin or Delete closes it; focus returns to the note's text (#83). A **Move** item (#83) sits before Pin.
 
 **Gather.** Each note moves to the corner slot (section 4.1) with an 8 to 18px random X and Y
 offset and a -8 to +8 degree tilt, animated for about half a second; a messy pile, not a tidy
@@ -97,8 +105,8 @@ host, and never written to a log. It is stored only on this machine (section 5.1
 - A **gather** control beside it: **Gather notes** (Option 1), **Line up notes** (Option 2), or
   **Notes** (Option 3). It shows the note count and is one press from the resting page in every
   option.
-- The notes themselves: each note's header is the drag handle. Each note has a Move button and a
-  Note options button (#81); Delete is in the note's menu.
+- The notes themselves: each note's header is the drag handle. Notes have no buttons (#83); Move
+  and Delete are in the note's menu.
 
 ## 3. Flow
 
@@ -108,8 +116,8 @@ host, and never written to a log. It is stored only on this machine (section 5.1
    reads as a title (#81); the header no longer shows it.
 3. **Leave empty:** if a new note is still empty when it loses focus, or when Escape is pressed in
    it, it is discarded without a message.
-4. **Move:** drag the header with a mouse, or press Move and then click where the note should go,
-   or focus Move and use the arrow keys (section 5.4).
+4. **Move:** drag the header with a mouse, or choose Move in the note's menu and then click where the note should go,
+   or use Alt+arrow keys in the text (section 5.4) (#83).
 5. **Delete:** choose Delete note in the note's menu (#81). The note goes at once, and the status line offers **Undo** for
    10 seconds (section 5.3).
 6. **Gather:** press the gather control. Every note moves to the option's gathering place, animated
@@ -240,8 +248,7 @@ drawer is open with the four notes in it, and focus is on its close button.
   ask for resizing (section 12).
 - **Surface (#81):** the `--nc-*` colours (section 0), plain paper with a lifted bottom and a faint
   grain; no border, no ruled lines.
-- **Header (28px, #81):** the **Move** button (four-way arrow) and, at the right, **Note options**
-  (three dots). There is no title and no Delete button in it; the accessible name of the note
+- **Header (28px, #81, #83):** a bare drag strip with no buttons (#83); only "Not saved" can show in it. There is no title and no Delete button in it; the accessible name of the note
   (`Note: <first line>`) still comes from the first line. The header is the drag handle
   (`cursor: grab`).
 - **Body (#81):** one text area in the note's font (Caveat 16px for a new note), with the first
@@ -256,22 +263,22 @@ drawer is open with the four notes in it, and focus is on its close button.
 
 - **Delete note** in the note's menu (#81; it was an × button) deletes the note at once, without a dialog. The status line next to the controls says
   "Note deleted." with an **Undo** button for 10 seconds. Undo restores the text, position and
-  z-order. Focus then moves to the next note's Move button, or to New note if none is left.
+  z-order. Focus then moves to the next note's text (#83), or to New note if none is left.
 - An empty note is discarded on blur without a message.
 - Gather uses the same status pattern ("4 notes gathered." · Undo).
 
 ### 5.4 Moving: mouse, single click and keyboard
 
-- **Drag:** press on the header (or on Move) and move more than 4px. The note lifts (stronger shadow,
+- **Drag:** press on the header (#83) and move more than 4px. The note lifts (stronger shadow,
   2px up) and follows the pointer. On release it snaps to the nearest 24px paper-grid cell and is
   saved.
-- **Click to place** (no dragging needed, WCAG 2.5.7): a click on Move without movement picks the
-  note up. Move shows as pressed, the pointer becomes a crosshair, and the status line says
+- **Click to place** (no dragging needed, WCAG 2.5.7): choosing **Move** in the note's menu (#83) picks the
+  note up. The pointer becomes a crosshair, and the status line says
   "Click where the note goes. Escape cancels." The next click on the page places the note's
-  top-left corner there, snapped and clamped. Escape, or a second click on Move, cancels.
-- **Keyboard:** with focus on Move, the arrow keys move the note by one grid cell (24px) and
-  Shift+arrows by four (96px). Each step is saved. A tooltip under focus says "Arrow keys move ·
-  Shift moves farther". After a pause of 1 second, a polite live region says "Note placed."
+  top-left corner there, snapped and clamped. Escape cancels and focuses the note's text (#83).
+- **Keyboard (#83):** with focus in the note's text, Alt+arrow keys move the note by one grid cell (24px) and
+  Alt+Shift+arrows by four (96px); plain arrows move the caret. Each step is saved. The text area's
+  description says "Alt+arrow keys move · Shift moves farther". After a pause of 1 second, a polite live region says "Note placed."
   once, not on every step. The note cannot leave the viewport (section 5.6).
 - **Bring to front:** any pointer press or focus inside a note puts it on top of the others.
 
@@ -398,10 +405,11 @@ Every string goes into `STRINGS`. "Not" is the Turkish for note; the accusative 
 | `lineUpNotes` / `putBack` | `Notları diz` / `Yerlerine koy` | `Line up notes` / `Put back` | Option 2; `putBack` also in the Option 3 drawer |
 | `closeNotes` | `Notları kapat` | `Close notes` | Option 3 drawer close |
 | `noteGroup(title)` | `Not: ${title}` | `Note: ${title}` | `aria-label` of a note |
-| `moveNote(title)` / `deleteNote(title)` | `Notu taşı: ${title}` / `Notu sil: ${title}` | `Move note: ${title}` / `Delete note: ${title}` | Button names |
+| `deleteNote(title)` | `Notu sil: ${title}` | `Delete note: ${title}` | Name of the delete undo message (#83: `moveNote` removed) |
+| `moveItem` | `Taşı` | `Move` | Note menu item (#83) |
 | `noteText` | `Not metni` | `Note text` | Text area name |
 | `notePlaceholder` | `Bir düşünce yaz…` | `Write a thought…` | Placeholder |
-| `moveHint` | `Ok tuşları taşır · Shift daha uzağa` | `Arrow keys move · Shift moves farther` | Tooltip and `aria-describedby` of Move |
+| `moveHint` | `Alt+ok tuşları taşır · Shift daha uzağa` | `Alt+arrow keys move · Shift moves farther` | `aria-describedby` of the text area (#83) |
 | `placeHint` | `Notun gideceği yere tıkla. Esc vazgeçer.` | `Click where the note goes. Escape cancels.` | Click-to-place status |
 | `notePlaced` | `Not yerleşti.` | `Note placed.` | Live region |
 | `noteDeleted` / `undo` | `Not silindi.` / `Geri al` | `Note deleted.` / `Undo` | Status line |
@@ -429,19 +437,19 @@ The count `n` uses the page's `Intl.NumberFormat` (`tr-TR` or `en-US`).
   | Option 1 footer buttons (`--ink` on `--paper`) | 14.4:1 | 14.1:1 |
   | Option 3 tab label (`--ink` on `--sheet`); count (`--muted` on `--sheet`) | ≥ 15:1; 6.0:1 | ≥ 12:1; 6.2:1 |
 
-- **Target size:** Move and Note options are 28x28px (#81) with a 44x44px hit area (in Option 1's pile, see
+- **Target size:** a note has no buttons (#83); the 28px header strip is only a drag area (pile, see
   section 12). Option 1's footer buttons
   are 17px tall with a 44px hit area (15px up, 12px down to the viewport edge). Option 2's board
   buttons are the existing 32px `.btn`s, as Refresh is today. Option 3's tab parts are 44px wide.
 - **Not colour alone:** "Not saved" is a word and an icon. A lifted note has a stronger shadow and
-  an offset; a picked-up note has Move pressed (`aria-pressed="true"`) and a crosshair pointer.
-- **Dragging alternative (2.5.7):** every move can be made with single clicks (Move, then click the
+  an offset; a picked-up note shows a crosshair pointer and the status line says where to click (#83).
+- **Dragging alternative (2.5.7):** every move can be made with single clicks (Move in the note menu, then click the
   spot) and with the keyboard.
 - **Focus order:**
   1. The page as today, through the footer.
   2. Option 1's New note and Gather notes, which are in the footer; Option 2's buttons, which are in
      the board tools after EN/TR; Option 3's tab, which comes after the footer.
-  3. Then the notes in creation order; within a note, Move, Note options, text (#81).
+  3. Then the notes in creation order; within a note, the text only (#83).
   4. Option 3's drawer, when open, comes right after the tab. Closing it returns focus to Notes.
 
   A new note takes focus in its text. After Gather, focus stays on the gather control, except in
@@ -449,8 +457,8 @@ The count `n` uses the page's `Intl.NumberFormat` (`tr-TR` or `en-US`).
 - **Focus not obscured (2.4.11):** the focus-reveal rule (section 5.5). QA test: tab through every
   ledger link with the notes gathered; each focused link is visible.
 - **Screen reader checks**, for the developer and QA:
-  1. Tabbing to note B's Move reads "Move note: Sample note B, button, Arrow keys move · Shift moves
-     farther". The arrow keys move it; after a pause, "Note placed." is read once.
+  1. Focusing note B's text reads its text with the description "Alt+arrow keys move · Shift moves
+     farther" (#83). Alt+arrow keys move it; after a pause, "Note placed." is read once.
   2. Pressing Gather notes with 4 notes reads "4 notes gathered." politely, once.
   3. Deleting reads "Note deleted." and Undo is the next tab stop.
   4. The notes layer is a region named "Notes"; each note is a group named "Note: <first line>".
@@ -471,8 +479,8 @@ The count `n` uses the page's `Intl.NumberFormat` (`tr-TR` or `en-US`).
 - **Line 6 (Colour):** after "`--lamp` yellow only on the board.", add "Sticky notes have their
   own manila `--note` surface; it marks the owner's private notes, not data."
 - **New line after Resize (Option 1 wording):** "Notes: 240x216 sticky notes (five colours, five fonts) with a
-  28px header (Move, Note options) and plain paper. They float in a fixed layer
-  above every section and move by drag, by Move then click, or by arrow keys in 24px grid steps.
+  28px button-free header (#83) and plain paper. They float in a fixed layer
+  above every section and move by drag, by Move in the menu then click, or by Alt+arrow keys in 24px grid steps (#83).
   New note and Gather notes sit at the right end of the footer. Gather piles every note in the
   bottom-right corner, in a messy pile. Note text stays on this machine and is never logged or
   sent (`docs/design/sticky-notes.md` §5.1)."
@@ -496,7 +504,7 @@ Web only, on desktop evergreen browsers. Pointer Events cover mouse, pen and tou
   #72 or a later change moves the footer up, the hit area must be rechecked. Decides: ux-designer
   at implementation review.
 - **Pile header targets (Option 1):** replaced by #81. In the messy pile a back note's header
-  (28px Move and Note options buttons) can be partly or wholly covered; the pile does not promise
+  (28px button-free strip, #83) can be partly or wholly covered; the pile does not promise
   that every header shows. A back note is reached by pressing any visible part of it, which pulls it
   out and to the front. Decides: ux-designer at implementation review.
 - **Small buttons in Options 2 and 3:** Option 2's board buttons are the existing 32px `.btn`

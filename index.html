@@ -374,15 +374,10 @@ body.placing, body.placing * { cursor: crosshair !important; }
 .n-paper::after { content: ''; position: absolute; inset: 0; opacity: .1; mix-blend-mode: multiply; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2  0 0 0 0 .16  0 0 0 0 .08  0 0 0 1.4 -.35'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E"); }
 .n-ear { position: absolute; z-index: 1; right: 0; bottom: 0; width: 22px; height: 22px; background: color-mix(in srgb, var(--note) 62%, #fff); filter: drop-shadow(-1px -1px 1.5px rgba(0, 0, 0, .3)); clip-path: polygon(0 0, 100% 0, 0 100%); }
 .n-ear[hidden] { display: none; }
-.n-head { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; padding: 0 2px; cursor: grab; user-select: none; touch-action: none; }
-.n-btn { position: relative; flex: none; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 3px; background: transparent; color: var(--note-muted); cursor: pointer; }
-.n-btn::after { content: ''; position: absolute; inset: -4px; }
-.n-btn:hover, .n-btn:focus-visible { background: var(--note-line); color: var(--note-ink); }
-.n-move[aria-pressed="true"] { background: var(--note-ink); color: var(--note); }
+.n-head { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; height: 28px; padding: 0 2px; cursor: grab; user-select: none; touch-action: none; }
 .n-unsaved { flex: none; display: inline-flex; align-items: center; gap: 3px; margin-right: auto; padding-left: 4px; font: 600 11px/1 Archivo, system-ui, sans-serif; }
 .n-unsaved[hidden] { display: none; }
-.n-tip { display: none; position: absolute; top: 32px; left: 4px; z-index: 2; max-width: 220px; padding: 3px 8px; border-radius: 3px; background: var(--ink); color: var(--paper); font: 400 12px/1.3 Archivo, system-ui, sans-serif; pointer-events: none; }
-.n-move:focus-visible + .n-tip { display: block; }
+.n-hint { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 /* one free text area: the textarea holds the text and caret with transparent glyphs, .n-view draws the same text styled */
 .n-body { position: relative; z-index: 1; min-height: 0; }
 .n-view, .n-text { position: absolute; inset: 0; margin: 0; padding: 0 16px 16px; border: 0; border-radius: 0; font: inherit; letter-spacing: 0; white-space: pre-wrap; overflow-wrap: break-word; word-break: normal; overflow-y: auto; scrollbar-width: none; }
@@ -585,13 +580,13 @@ body.placing, body.placing * { cursor: crosshair !important; }
       noRoom: 'Daha fazla yer yok', showsAll: 'Tümü zaten görünüyor', lastOpen: 'Bir bölüm açık kalır',
       resetLayout: 'Düzeni sıfırla', layoutReset: 'Düzen sıfırlandı', enlarged: (name) => `${name} büyütüldü`,
       notes: 'Notlar', newNote: 'Yeni not', gatherNotes: 'Notları topla',
-      noteGroup: (t) => `Not: ${t}`, moveNote: (t) => `Notu taşı: ${t}`, deleteNote: (t) => `Notu sil: ${t}`,
-      noteText: 'Not metni', notePlaceholder: 'Bir düşünce yaz…', moveHint: 'Ok tuşları taşır · Shift daha uzağa',
+      noteGroup: (t) => `Not: ${t}`, deleteNote: (t) => `Notu sil: ${t}`,
+      noteText: 'Not metni', notePlaceholder: 'Bir düşünce yaz…', moveHint: 'Alt+ok tuşları taşır · Shift daha uzağa', moveItem: 'Taşı',
       placeHint: 'Notun gideceği yere tıkla. Esc vazgeçer.', notePlaced: 'Not yerleşti.', noteDeleted: 'Not silindi.', undo: 'Geri al',
       notesGathered: (n) => `${num.format(n)} not toplandı.`, noNotes: 'Henüz not yok',
       notesLimit: 'En fazla 50 not olur. Yenisi için birini sil.', notSaved: 'Kaydedilmedi',
       saveFailed: 'Notlar bu makineye kaydedilemiyor. Sekmeyi kapatmadan önce metni kopyala.',
-      noteMenu: (t) => `Not seçenekleri: ${t}`, noteMenuLabel: 'Not seçenekleri',
+      noteMenu: (t) => `Not seçenekleri: ${t}`,
       mColor: 'Renk', mFont: 'Yazı tipi', mSize: 'Boyut', mTilt: 'Eğim',
       colYellow: 'Klasik sarı', colPink: 'Pastel pembe', colMint: 'Nane yeşili', colBlue: 'Açık mavi', colOrange: 'Turuncu',
       fontPlain: 'Sade (Archivo)', sizeUp: 'Daha büyük yazı', sizeDown: 'Daha küçük yazı',
@@ -687,13 +682,13 @@ body.placing, body.placing * { cursor: crosshair !important; }
       noRoom: 'No more room', showsAll: 'Shows everything already', lastOpen: 'One section stays open',
       resetLayout: 'Reset layout', layoutReset: 'Layout reset', enlarged: (name) => `${name} enlarged`,
       notes: 'Notes', newNote: 'New note', gatherNotes: 'Gather notes',
-      noteGroup: (t) => `Note: ${t}`, moveNote: (t) => `Move note: ${t}`, deleteNote: (t) => `Delete note: ${t}`,
-      noteText: 'Note text', notePlaceholder: 'Write a thought…', moveHint: 'Arrow keys move · Shift moves farther',
+      noteGroup: (t) => `Note: ${t}`, deleteNote: (t) => `Delete note: ${t}`,
+      noteText: 'Note text', notePlaceholder: 'Write a thought…', moveHint: 'Alt+arrow keys move · Shift moves farther', moveItem: 'Move',
       placeHint: 'Click where the note goes. Escape cancels.', notePlaced: 'Note placed.', noteDeleted: 'Note deleted.', undo: 'Undo',
       notesGathered: (n) => `${num.format(n)} ${n === 1 ? 'note' : 'notes'} gathered.`, noNotes: 'No notes yet',
       notesLimit: '50 notes is the limit. Delete one to add another.', notSaved: 'Not saved',
       saveFailed: "Notes can't be saved on this machine. Copy the text before closing the tab.",
-      noteMenu: (t) => `Note options: ${t}`, noteMenuLabel: 'Note options',
+      noteMenu: (t) => `Note options: ${t}`,
       mColor: 'Colour', mFont: 'Font', mSize: 'Size', mTilt: 'Tilt',
       colYellow: 'Classic Yellow', colPink: 'Pastel Pink', colMint: 'Mint Green', colBlue: 'Light Blue', colOrange: 'Orange',
       fontPlain: 'Plain (Archivo)', sizeUp: 'Larger text', sizeDown: 'Smaller text',
@@ -1615,9 +1610,7 @@ body.placing, body.placing * { cursor: crosshair !important; }
   const DEMO_PAGE = document.documentElement.hasAttribute('data-demo');
   const nIcon = (inner) => `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${inner}</svg>`;
   const NICON = {
-    move: nIcon('<path d="M8 2.5v11M2.5 8h11"/><path d="M6 4.5 8 2.5l2 2M6 11.5l2 2 2-2M4.5 6 2.5 8l2 2M11.5 6l2 2-2 2"/>'),
     del: nIcon('<path d="M4 4l8 8M12 4l-8 8"/>'),
-    dots: nIcon('<circle cx="3.5" cy="8" r=".6"/><circle cx="8" cy="8" r=".6"/><circle cx="12.5" cy="8" r=".6"/>'),
     warn: nIcon('<path d="M8 2.5 14 13H2z"/><path d="M8 6.8v3M8 11.8v.1"/>'),
   };
   let notes = []; // { id, text, x, y, z, angle, font, size, color, pinned, fresh, unsaved } in creation order; z is the stacking order
@@ -1728,9 +1721,7 @@ body.placing, body.placing * { cursor: crosshair !important; }
     el.classList.toggle('pinned', n.pinned); el.classList.toggle('piled', !!n.piled);
     el.querySelector('.n-ear').hidden = !n.pinned;
     el.setAttribute('aria-label', L.noteGroup(shown));
-    el.querySelector('.n-move').setAttribute('aria-label', L.moveNote(shown));
-    const mb = el.querySelector('.n-menu-btn');
-    mb.setAttribute('aria-label', L.noteMenu(shown)); mb.title = L.noteMenuLabel;
+    el.querySelector('.n-hint').textContent = L.moveHint;
     el.querySelector('.n-unsaved').hidden = !n.unsaved;
     const c = el.querySelector('.n-count');
     c.hidden = n.text.length < NOTE.countAt;
@@ -1743,7 +1734,7 @@ body.placing, body.placing * { cursor: crosshair !important; }
   function buildNote(n) {
     const el = document.createElement('div');
     el.className = 'note'; el.dataset.id = n.id; el.setAttribute('role', 'group');
-    el.innerHTML = `<div class="n-paper"></div><span class="n-ear" hidden></span><div class="n-head"><button type="button" class="n-btn n-move" aria-pressed="false" aria-describedby="nh-${n.id}">${NICON.move}</button><span class="n-tip" id="nh-${n.id}" role="tooltip">${esc(L.moveHint)}</span><span class="n-unsaved" hidden>${NICON.warn}${esc(L.notSaved)}</span><button type="button" class="n-btn n-menu-btn" aria-haspopup="menu" aria-expanded="false">${NICON.dots}</button></div><div class="n-body"><div class="n-view" aria-hidden="true"></div><textarea class="n-text" maxlength="${NOTE.maxText}" spellcheck="false" aria-label="${esc(L.noteText)}" placeholder="${esc(L.notePlaceholder)}"></textarea></div><span class="n-count" hidden></span>`;
+    el.innerHTML = `<div class="n-paper"></div><span class="n-ear" hidden></span><div class="n-head"><span class="n-hint" id="nh-${n.id}">${esc(L.moveHint)}</span><span class="n-unsaved" hidden>${NICON.warn}${esc(L.notSaved)}</span></div><div class="n-body"><div class="n-view" aria-hidden="true"></div><textarea class="n-text" maxlength="${NOTE.maxText}" spellcheck="false" aria-describedby="nh-${n.id}" aria-label="${esc(L.noteText)}" placeholder="${esc(L.notePlaceholder)}"></textarea></div><span class="n-count" hidden></span>`;
     el.querySelector('.n-text').value = n.text;
     n.last = n.text;
     noteEls.set(n.id, el);
@@ -1830,7 +1821,7 @@ body.placing, body.placing * { cursor: crosshair !important; }
     const keep = n.text ? { ...n } : null;
     removeNote(n);
     persist();
-    if (next) noteEls.get(next.id).querySelector('.n-move').focus(); else $('#newNote').focus();
+    if (next) noteEls.get(next.id).querySelector('.n-text').focus(); else $('#newNote').focus();
     if (!keep) return;
     setStatus(L.noteDeleted, () => {
       if (notes.length >= NOTE.max) { setStatus(L.notesLimit); return; }
@@ -1838,7 +1829,7 @@ body.placing, body.placing * { cursor: crosshair !important; }
       notes.splice(Math.min(i, notes.length), 0, keep);
       buildNote(keep);
       persist(); syncCtl();
-      noteEls.get(keep.id).querySelector('.n-move').focus();
+      noteEls.get(keep.id).querySelector('.n-text').focus();
     });
   }
 
@@ -1869,13 +1860,11 @@ body.placing, body.placing * { cursor: crosshair !important; }
   function startPlacing(n) {
     placing = n.id;
     document.body.classList.add('placing');
-    for (const [id, el] of noteEls) el.querySelector('.n-move').setAttribute('aria-pressed', String(id === n.id));
     drawStatus();
   }
   function stopPlacing() {
     placing = null;
     document.body.classList.remove('placing');
-    for (const el of noteEls.values()) el.querySelector('.n-move').setAttribute('aria-pressed', 'false');
     drawStatus();
   }
 
@@ -1916,7 +1905,7 @@ body.placing, body.placing * { cursor: crosshair !important; }
     const el = noteEls.get(n.id);
     el.classList.remove('gathering');
     front(n);
-    const grab = (e.target.closest('.n-head') && !e.target.closest('.n-menu-btn')) || n.piled;
+    const grab = e.target.closest('.n-head') || n.piled;
     if (e.button !== 0 || !grab) return;
     drag = { n, sx: e.clientX, sy: e.clientY, ox: el.offsetLeft, oy: el.offsetTop, moved: false, wasPiled: !!n.piled };
     window.addEventListener('pointermove', onDragMove);
@@ -1985,16 +1974,6 @@ body.placing, body.placing * { cursor: crosshair !important; }
   notesEl.addEventListener('click', (e) => {
     const n = noteOf(e.target);
     if (!n) return;
-    if (e.target.closest('.n-menu-btn')) {
-      const b = e.target.closest('.n-menu-btn'), r = b.getBoundingClientRect();
-      openMenu(n, r.right - MENU_W, r.bottom + 4, b);
-      return;
-    }
-    if (e.target.closest('.n-move')) {
-      if (suppressClick) return;
-      if (placing === n.id) stopPlacing(); else startPlacing(n);
-      return;
-    }
     // a plain click on a bullet line strikes it through like a pencil; clicking again clears it
     const ta = e.target.closest('.n-text');
     if (ta && e.detail === 1 && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey && ta.selectionStart === ta.selectionEnd && !suppressClick) strikeLine(n, ta, ta.selectionStart);
@@ -2004,9 +1983,8 @@ body.placing, body.placing * { cursor: crosshair !important; }
     if (!n) return;
     if ((e.key === 'F10' && e.shiftKey) || e.key === 'ContextMenu') { // keyboard path to the note menu
       e.preventDefault();
-      const el = noteEls.get(n.id), r = (e.target.closest('.n-menu-btn') || el).getBoundingClientRect();
-      if (e.target.closest('.n-menu-btn')) openMenu(n, r.right - MENU_W, r.bottom + 4, e.target);
-      else openMenu(n, r.left + 16, r.top + 32, e.target);
+      const r = noteEls.get(n.id).getBoundingClientRect();
+      openMenu(n, r.left + 16, r.top + 32, e.target);
       return;
     }
     const ta = e.target.matches('.n-text') ? e.target : null;
@@ -2025,7 +2003,7 @@ body.placing, body.placing * { cursor: crosshair !important; }
       }
     }
     const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
-    if (!d || !e.target.matches('.n-move')) return;
+    if (!d || !ta || !e.altKey || e.ctrlKey || e.metaKey) return; // Alt+arrow moves the note; plain arrows move the caret
     e.preventDefault();
     const step = NOTE.grid * (e.shiftKey ? 4 : 1);
     const el = noteEls.get(n.id);
@@ -2065,12 +2043,11 @@ body.placing, body.placing * { cursor: crosshair !important; }
       + `<div class="nm-fonts" role="group" aria-label="${esc(L.mFont)}">${FONTS.map((f) => item('font', f, f === 'sans' ? esc(L.fontPlain) : `<span class="nm-f-${f}">${fontName[f]}</span>`, 'radio')).join('')}</div>`
       + `<div class="nm-row" role="group" aria-label="${esc(L.mSize)}"><button type="button" role="menuitem" class="nm-it" data-act="down" aria-label="${esc(L.sizeDown)}" title="${esc(L.sizeDown)}">A&minus;</button><button type="button" role="menuitem" class="nm-it" data-act="up" aria-label="${esc(L.sizeUp)}" title="${esc(L.sizeUp)}">A+</button></div>`
       + `<div class="nm-fonts" role="group" aria-label="${esc(L.mTilt)}" style="border-top:1px solid var(--rule-soft);margin-top:4px;padding-top:4px">${item('random', '', esc(L.tiltRandom))}${item('reset', '', esc(L.tiltReset))}</div>`
-      + `${item('pin', '', esc(L.pinFront), 'checkbox')}${item('delete', '', esc(L.deleteNoteMenu)).replace('class="nm-it"', 'class="nm-it nm-del"')}`;
+      + `${item('move', '', esc(L.moveItem))}${item('pin', '', esc(L.pinFront), 'checkbox')}${item('delete', '', esc(L.deleteNoteMenu)).replace('class="nm-it"', 'class="nm-it nm-del"')}`;
     document.body.appendChild(m);
     menuEl = m;
     const r = m.getBoundingClientRect(), p = menuPos(x, y, r.width, r.height, vp().w, vp().h);
     m.style.left = `${p.left}px`; m.style.top = `${p.top}px`;
-    const mb = noteEls.get(n.id).querySelector('.n-menu-btn'); mb.setAttribute('aria-expanded', 'true');
     syncMenu();
     (m.querySelector(`[data-act="color"][data-v="${n.color}"]`) || menuItems()[0]).focus();
   }
@@ -2079,7 +2056,6 @@ body.placing, body.placing * { cursor: crosshair !important; }
     const id = menuNote, opener = menuOpener;
     menuEl.remove(); menuEl = null; menuNote = null; menuOpener = null;
     const el = noteEls.get(id);
-    if (el) el.querySelector('.n-menu-btn').setAttribute('aria-expanded', 'false');
     if (!refocus) return;
     const back = opener && opener.isConnected ? opener : el && el.querySelector('.n-text');
     if (back) back.focus({ preventScroll: true });
@@ -2096,6 +2072,7 @@ body.placing, body.placing * { cursor: crosshair !important; }
     else if (act === 'random') { n.angle = randomTilt(Math.random()); paintNote(n); persist(); }
     else if (act === 'reset') { n.angle = 0; paintNote(n); persist(); }
     else if (act === 'pin') { n.pinned = !n.pinned; paintNote(n); persist(); closeMenu(true); }
+    else if (act === 'move') { closeMenu(false); startPlacing(n); }
     else if (act === 'delete') { closeMenu(false); deleteNote(n); }
   });
   document.addEventListener('keydown', (e) => {
@@ -2116,8 +2093,6 @@ body.placing, body.placing * { cursor: crosshair !important; }
   // Click to place (WCAG 2.5.7): the next click on the page puts the note's top-left corner there
   document.addEventListener('click', (e) => {
     if (!placing) return;
-    const own = e.target.closest && e.target.closest('.note');
-    if (own && own.dataset.id === placing && e.target.closest('.n-move')) return; // a second click on Move cancels
     if (e.detail === 0) return; // a keyboard activation has no place to put the note
     e.preventDefault(); e.stopPropagation();
     const n = byId(placing);
@@ -2128,7 +2103,7 @@ body.placing, body.placing * { cursor: crosshair !important; }
     if (e.key !== 'Escape' || !placing) return;
     const el = noteEls.get(placing);
     stopPlacing();
-    if (el) el.querySelector('.n-move').focus();
+    if (el) el.querySelector('.n-text').focus();
   });
   // Focus reveal (WCAG 2.4.11): notes that completely cover the control keyboard focus lands on step aside
   const revealed = new Set();
