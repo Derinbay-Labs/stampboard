@@ -402,7 +402,7 @@ The count `n` uses the page's `Intl.NumberFormat` (`tr-TR` or `en-US`).
 
 ## 10. DESIGN.md lines to update (after the pick; not edited here)
 
-- **Line 4 (Colour):** after "`--lamp` yellow only on the board.", add "Sticky notes have their
+- **Line 6 (Colour):** after "`--lamp` yellow only on the board.", add "Sticky notes have their
   own manila `--note` surface; it marks the owner's private notes, not data."
 - **New line after Ledgers (Option 1 wording):** "Notes: 240x216 manila notes (`--note`) with a
   36px header (Move, title from the first line, Delete) and ruled text. They float in a fixed layer
@@ -410,7 +410,7 @@ The count `n` uses the page's `Intl.NumberFormat` (`tr-TR` or `en-US`).
   New note and Gather notes sit at the right end of the footer. Gather piles every note in the
   bottom-right corner, headers 36px apart. Note text stays on this machine and is never logged or
   sent (`docs/design/sticky-notes.md` §5.1)."
-- **Line 10 (Signature):** "Its stamp animation is the only motion" stays true; notes add none.
+- **Line 11 (Signature):** "Its stamp animation is the only motion" stays true; notes add none.
 
 ## 11. Platform notes
 
