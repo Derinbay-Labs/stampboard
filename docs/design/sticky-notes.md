@@ -1,7 +1,7 @@
 # Sticky notes: private notes on top of the page, gathered with one press
 
-Design for issue #66. **Awaiting the CEO's pick** (constitution §2); nothing is built before it.
-Recommended default: **Option 1, Corner pile** (section 4).
+Design for issue #66. **Accepted: Option 1, Corner pile** (section 4.1), chosen by the CEO on
+2026-11-27 in #74. Options 2 and 3 are kept for the record; implementation is #68.
 
 Each option has a light mockup in English and a dark mockup in Turkish. Each mockup is one
 self-contained HTML file that renders the real page: the demo DOM with the scripts stripped and the
@@ -58,11 +58,11 @@ controls live and what "gather" does.
 
 | Option | Mockups (1920x1080) | 1633x930 checks | Strengths | Weaknesses |
 |---|---|---|---|---|
-| **1. Corner pile** (recommended) | [light EN](sticky-notes/mockups/option-1-light.html) · [dark TR](sticky-notes/mockups/option-1-dark.html) | light: [spread](sticky-notes/checks/option-1-light-scattered-1633x930.png) · [gathered](sticky-notes/checks/option-1-light-gathered-1633x930.png); dark: [spread](sticky-notes/checks/option-1-dark-scattered-1633x930.png) · [gathered](sticky-notes/checks/option-1-dark-gathered-1633x930.png) | One press gathers everything into one predictable 240px column in the bottom-right corner. Every note stays on the page and its title stays readable. The controls live in the footer, which no section-resize option folds or moves. Adds no component beyond the note. | The pile covers the right end of the Issues ledger: ages and seals of the bottom rows. Only the front note's text is readable in the pile; the others show their title line. The footer buttons are small text (17px visual, 44px hit area). |
+| **1. Corner pile** (accepted) | [light EN](sticky-notes/mockups/option-1-light.html) · [dark TR](sticky-notes/mockups/option-1-dark.html) | light: [spread](sticky-notes/checks/option-1-light-scattered-1633x930.png) · [gathered](sticky-notes/checks/option-1-light-gathered-1633x930.png); dark: [spread](sticky-notes/checks/option-1-dark-scattered-1633x930.png) · [gathered](sticky-notes/checks/option-1-dark-gathered-1633x930.png) | One press gathers everything into one predictable 240px column in the bottom-right corner. Every note stays on the page and its title stays readable. The controls live in the footer, which no section-resize option folds or moves. Adds no component beyond the note. | The pile covers the right end of the Issues ledger: ages and seals of the bottom rows. Only the front note's text is readable in the pile; the others show their title line. The footer buttons are small text (17px visual, 44px hit area). |
 | **2. Board line-up** | [light EN](sticky-notes/mockups/option-2-light.html) · [dark TR](sticky-notes/mockups/option-2-dark.html) | light: [spread](sticky-notes/checks/option-2-light-scattered-1633x930.png) · [lined up](sticky-notes/checks/option-2-light-gathered-1633x930.png); dark: [spread](sticky-notes/checks/option-2-dark-scattered-1633x930.png) · [lined up](sticky-notes/checks/option-2-dark-gathered-1633x930.png) | Every gathered note is fully readable, side by side. Gathering can be undone at any time with **Put back**, which returns every note to where it was. The controls sit with the board's other tools. | The row covers the board's runner and time columns, the live data the wallboard exists for. The tools row grows by about 270px, so the headline loses that width. If #72 picks the Shelf, the two buttons must move to the shelf with the board's tools. |
 | **3. Edge drawer** | [light EN](sticky-notes/mockups/option-3-light.html) · [dark TR](sticky-notes/mockups/option-3-dark.html) | light: [spread](sticky-notes/checks/option-3-light-scattered-1633x930.png) · [drawer](sticky-notes/checks/option-3-light-gathered-1633x930.png); dark: [spread](sticky-notes/checks/option-3-dark-scattered-1633x930.png) · [drawer](sticky-notes/checks/option-3-dark-gathered-1633x930.png) | Gathering clears the page completely once the drawer is closed. The drawer lists every note at full size and scrolls, so it holds any number. It does not depend on the section layout; once #72 ships, the fixed tab can sit over a right-edge spine or a head's corner button, so its vertical place may need a rule. | Gathered notes are out of sight when the drawer is closed, which works against "write thoughts where I look". The open drawer covers a 288px strip on the right. The tab overlaps 20px of the sheets' right edge. It adds two components (tab and drawer) and drawer focus handling. |
 
-**Recommended default: Option 1.** It is the request taken literally: notes live on the page, and
+**Recommended default, and the CEO's pick (#74): Option 1.** It is the request taken literally: notes live on the page, and
 one press puts them all in one place where they stay visible. The pile costs the least space of
 the three gathered states (one 240px column), and it sits in the one corner the eye reaches last
 on a wallboard read top-left to bottom-right. The footer is the only place that no section-resize
@@ -400,17 +400,17 @@ The count `n` uses the page's `Intl.NumberFormat` (`tr-TR` or `en-US`).
   the marker; it is in none of them. With `--demo`, the note is not shown.
 - **Motion:** none added.
 
-## 10. DESIGN.md lines to update (after the pick; not edited here)
+## 10. DESIGN.md lines (applied after the pick)
 
 - **Line 6 (Colour):** after "`--lamp` yellow only on the board.", add "Sticky notes have their
   own manila `--note` surface; it marks the owner's private notes, not data."
-- **New line after Ledgers (Option 1 wording):** "Notes: 240x216 manila notes (`--note`) with a
+- **New line after Resize (Option 1 wording):** "Notes: 240x216 manila notes (`--note`) with a
   36px header (Move, title from the first line, Delete) and ruled text. They float in a fixed layer
   above every section and move by drag, by Move then click, or by arrow keys in 24px grid steps.
   New note and Gather notes sit at the right end of the footer. Gather piles every note in the
   bottom-right corner, headers 36px apart. Note text stays on this machine and is never logged or
   sent (`docs/design/sticky-notes.md` §5.1)."
-- **Line 11 (Signature):** "Its stamp animation is the only motion" stays true; notes add none.
+- **Line 13 (Signature):** "Its stamp animation is the only motion" stays true; notes add none.
 
 ## 11. Platform notes
 
