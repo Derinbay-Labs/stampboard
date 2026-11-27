@@ -262,6 +262,64 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
   .ag-subs li { flex-wrap: wrap; column-gap: 8px; white-space: normal; }
   .ag-subs span:last-child { overflow: visible; }
 }
+
+/* ---------- Section resize (docs/design/section-resize.md, Option 1) ---------- */
+.contents, .l-id { display: contents; }
+.rz { display: inline-flex; gap: 16px; margin-left: 20px; align-self: center; flex: none; }
+.rz button { position: relative; width: 28px; height: 28px; display: inline-grid; place-items: center; padding: 0; border: 1px solid var(--rule); border-radius: 3px; background: transparent; color: var(--muted); cursor: pointer; }
+.rz button[hidden] { display: none; }
+.rz button::after { content: ''; position: absolute; inset: -8px; } /* 44px hit area */
+.rz button:hover { color: var(--ink); border-color: var(--muted); background: var(--sheet-hover); }
+.rz button[aria-disabled="true"] { opacity: .4; cursor: default; }
+.rz button[aria-disabled="true"]:hover { background: transparent; color: var(--muted); border-color: var(--rule); }
+.board .rz { margin-left: 8px; padding-left: 18px; border-left: 1px solid var(--board-rule); }
+.board .rz button { border-color: var(--board-rule); color: var(--board-muted); }
+.board .rz button:hover { color: var(--board-ink); background: var(--board-2); border-color: var(--board-muted); }
+.board .rz button[aria-disabled="true"]:hover { color: var(--board-muted); background: transparent; border-color: var(--board-rule); }
+.foot .reset { position: relative; font: inherit; color: var(--ink); background: var(--paper); border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+.foot .reset[hidden] { display: none; }
+.foot .reset::after { content: ''; position: absolute; inset: -10px -6px; }
+.filters[hidden] { display: none; }
+.app.sized .departures { max-height: none !important; }
+/* A folded board: one bar that keeps the head's status and controls */
+.app.sized > .board.folded { flex: none; min-height: 0; grid-template-rows: auto; }
+.board.folded .b-head { grid-template-columns: minmax(0, 1fr) auto; align-items: center; padding: 10px 24px; border-bottom: 0; }
+.board.folded .b-head > div:first-child { display: flex; align-items: baseline; gap: 20px; min-width: 0; }
+.board.folded .brand { margin: 0; flex: none; }
+.board.folded h1 { font-size: 22px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.board.folded h1 .h-alert { color: var(--seal); }
+.board.folded .sub { display: none; }
+.board.folded .b-side { display: flex; align-items: center; gap: 20px; }
+.board.folded .clock { font-size: 22px; }
+/* A folded ledger or Agents keeps its head; a ledger's head bar becomes a spine beside an open sibling */
+.ledger.folded .l-filters { display: none; }
+.ledger.folded:not(.spine) .l-head { border-bottom: 0; }
+.app.sized > .ledger.ag.folded { flex: none; min-height: 0; max-height: none; }
+/* Explicit layout (fixed layout only): sizes come from the stored shares; floors and content caps stay */
+@media (min-width: 1281px) and (min-height: 761px) {
+  .app.sized > .board, .app.sized > .ag, .app.sized > .ledgers { flex: var(--sw) 1 0px; max-height: max-content; }
+  .app.sized > .board { min-height: 200px; }
+  .app.sized > .ag { min-height: 0; }
+  .app.sized > .ag:has(.entry) { min-height: 104px; }
+  .app.sized > .ledgers { min-height: calc(var(--lf, 0px) + 150px); display: flex; gap: 20px; }
+  .app.sized > .ledgers > .ledger { flex: var(--rw, 1) 1 0px; min-width: 0; grid-template-columns: minmax(0, 1fr); }
+  .app.sized > .ledgers > .pr { min-width: 560px; }
+  .app.sized > .ledgers > .is { min-width: 480px; }
+  .app.sized .l-head .l-note { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .app.sized > .board.folded { flex: none; min-height: 0; }
+  .app.sized > .ledger.ag.folded { flex: none; min-height: 0; max-height: none; }
+  .app.sized > .ledgers.rowfolded { flex: none; min-height: 0; max-height: none; }
+  .app.sized > .ledgers.rowfolded > .ledger { flex: 1 1 0; min-width: 0; }
+  .app.sized > .ledgers > .ledger.spine { flex: none; width: 56px; min-width: 0; display: flex; flex-direction: column; align-items: center; }
+  .spine .l-head { display: contents; }
+  .spine .rz { order: -1; margin: 14px 0 10px; }
+  .spine .l-id { writing-mode: vertical-rl; transform: rotate(180deg); display: flex; align-items: center; gap: 12px; padding: 18px 0; white-space: nowrap; overflow: hidden; min-height: 0; }
+  .spine .l-id h2 { margin: 0; }
+  .spine .l-id .l-note { margin: 6px 0 0; }
+}
+@media (max-width: 1280px), (max-height: 760px) {
+  .rz .rz-enl { display: none; }
+}
 </style>
 </head>
 <body>
@@ -287,6 +345,7 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
             <button type="button" data-lang-set="tr" lang="tr">TR</button>
             <button type="button" data-lang-set="en" lang="en">EN</button>
           </div>
+          <span class="rz" data-rz="board"></span>
         </div>
       </div>
     </div>
@@ -297,22 +356,23 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
   <div id="workAlert"></div>
 
   <section class="ledger ag" id="agents" aria-labelledby="h-ag" hidden>
-    <div class="l-head"><h2 id="h-ag" data-t="agents">Agents</h2><span class="l-count" id="agCount"></span><span class="ag-split" id="agSplit"></span><span class="l-note" id="agNote"></span></div>
+    <div class="l-head"><h2 id="h-ag" data-t="agents">Agents</h2><span class="l-count" id="agCount"></span><span class="ag-split" id="agSplit"></span><span class="l-note" id="agNote"></span><span class="rz" data-rz="agents"></span></div>
     <div class="l-body" id="agList" role="group" aria-labelledby="h-ag"></div>
   </section>
 
   <main class="ledgers">
     <section class="ledger pr" aria-labelledby="h-pr">
-      <div class="l-head"><h2 id="h-pr" data-t="prs">Pull requests</h2><span class="l-count" id="prCount"></span><span class="l-note" id="prNote"></span><div class="l-filters" id="prFilters" role="group" data-t-label="prRepoFilter" hidden></div></div>
+      <div class="l-head"><div class="l-id"><h2 id="h-pr" data-t="prs">Pull requests</h2><span class="l-count" id="prCount"></span><span class="l-note" id="prNote"></span></div><span class="rz" data-rz="pr"></span><div class="l-filters" id="prFilters" role="group" data-t-label="prRepoFilter" hidden></div></div>
       <div class="l-body" id="prList"></div>
     </section>
     <section class="ledger is" aria-labelledby="h-is">
-      <div class="l-head"><h2 id="h-is" data-t="issues">Issues</h2><span class="l-count" id="isCount"></span><span class="l-note" id="isNote"></span><div class="l-filters" id="isFilters" role="group" data-t-label="isRepoFilter" hidden></div></div>
+      <div class="l-head"><div class="l-id"><h2 id="h-is" data-t="issues">Issues</h2><span class="l-count" id="isCount"></span><span class="l-note" id="isNote"></span></div><span class="rz" data-rz="is"></span><div class="l-filters" id="isFilters" role="group" data-t-label="isRepoFilter" hidden></div></div>
       <div class="l-body" id="isList"></div>
     </section>
   </main>
 
-  <footer class="foot" id="foot"></footer>
+  <footer class="foot"><button type="button" class="reset" id="resetLayout" data-t="resetLayout" hidden></button><span id="foot" class="contents"></span></footer>
+  <div class="sr" id="rzLive" role="status" aria-live="polite"></div>
 </div>
 
 <script>
@@ -323,6 +383,7 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
   const store = {
     get(k) { try { return localStorage.getItem(k); } catch { return null; } },
     set(k, v) { try { localStorage.setItem(k, v); } catch { /* the preference is not kept, nothing else breaks */ } },
+    remove(k) { try { localStorage.removeItem(k); } catch { /* nothing to clear */ } },
   };
   // Keep the theme and language picked before the rename from Run panel
   for (const k of ['lang', 'theme']) {
@@ -413,6 +474,12 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
       agStarted: (d) => `${d} tarihinde başladı`,
       agUnreachable: 'Ulaşılamıyor',
       agNoSessions: 'Ulaşılabilen makinelerde Claude Code oturumu yok.',
+      secBoard: 'Actions panosu',
+      enlargeBoard: 'Actions panosunu büyüt', enlargeAgents: 'Ajanları büyüt', enlargePr: "Pull request'leri büyüt", enlargeIs: "Issue'ları büyüt",
+      bodyBoard: 'Actions işleri', bodyAgents: 'Ajan oturumları', bodyPr: 'Pull request listesi', bodyIs: 'Issue listesi',
+      tipFold: 'Daralt', tipUnfold: 'Aç', tipEnlarge: 'Büyüt: iki kat yer',
+      noRoom: 'Daha fazla yer yok', showsAll: 'Tümü zaten görünüyor', lastOpen: 'Bir bölüm açık kalır',
+      resetLayout: 'Düzeni sıfırla', layoutReset: 'Düzen sıfırlandı', enlarged: (name) => `${name} büyütüldü`,
     },
     en: {
       appName: 'Stampboard',
@@ -496,6 +563,12 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
       agStarted: (d) => `Started ${d}`,
       agUnreachable: 'Unreachable',
       agNoSessions: 'No Claude Code sessions on the reachable hosts.',
+      secBoard: 'Actions board',
+      enlargeBoard: 'Enlarge the Actions board', enlargeAgents: 'Enlarge Agents', enlargePr: 'Enlarge Pull requests', enlargeIs: 'Enlarge Issues',
+      bodyBoard: 'Actions jobs', bodyAgents: 'Agent sessions', bodyPr: 'Pull request list', bodyIs: 'Issue list',
+      tipFold: 'Fold', tipUnfold: 'Unfold', tipEnlarge: 'Enlarge: twice the room',
+      noRoom: 'No more room', showsAll: 'Shows everything already', lastOpen: 'One section stays open',
+      resetLayout: 'Reset layout', layoutReset: 'Layout reset', enlarged: (name) => `${name} enlarged`,
     },
   };
   // ?lang=en or ?lang=tr, then the EN/TR switch (stored in stampboard-lang), then the browser
@@ -777,7 +850,331 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
     list.innerHTML = order.length ? `<ol>${order.map(agentEntry).join('')}</ol>` : `<p class="more">${esc(L.agNoSessions)}</p>`;
     // The sheet has no links, so it takes a tab stop only when it scrolls (keyboard users can then scroll it).
     if (list.scrollHeight > list.clientHeight + 1) list.tabIndex = 0; else list.removeAttribute('tabindex');
+    applyLayout();
   }
+
+  // ---------- Section resize (docs/design/section-resize.md, Option 1) ----------
+  // The layout maths below is pure: test/layout.test.mjs extracts this block between the markers and runs it.
+  // <layout-math>
+  const SPINE_W = 56, ROW_GAP = 20, MIN_GAIN = 0.05;
+  const clampN = (v, lo, hi) => Math.max(lo, Math.min(v, hi)); // a floor beats a cap, as min-height beats max-height in CSS
+  const sumN = (a) => a.reduce((s, v) => s + v, 0);
+  const stackKeys = ['board', 'agents', 'ledgers'];
+
+  // What a flex line with `flex: w 1 0px` does: weights share the total; an item that breaks its floor or cap is frozen
+  // there and the rest share again. items: [{ w, min, max }]
+  function flexSizes(total, items) {
+    const out = items.map(() => 0);
+    let live = items.map((_, i) => i);
+    let left = total;
+    while (live.length) {
+      const wsum = sumN(live.map((i) => items[i].w));
+      const want = live.map((i) => (wsum > 0 ? (left * items[i].w) / wsum : left / live.length));
+      const got = live.map((i, n) => clampN(want[n], items[i].min ?? 0, items[i].max ?? Infinity));
+      const viol = sumN(got) - sumN(want);
+      const freeze = live.filter((_, n) => (Math.abs(viol) < 1e-9 ? true : viol > 0 ? got[n] > want[n] : got[n] < want[n]));
+      const frozen = new Set(freeze.length ? freeze : live);
+      live.forEach((i, n) => { if (frozen.has(i)) { out[i] = got[n]; left -= got[n]; } });
+      live = live.filter((i) => !frozen.has(i));
+    }
+    return out;
+  }
+  const fractions = (sizes) => { const t = sumN(sizes); return sizes.map((v) => (t > 0 ? v / t : 0)); };
+
+  // Enlarge the board or Agents (a stack item): its height doubles, up to its content; the other items, the ledger row
+  // included, keep their proportions (every height times k) above their floors. items: [{ size, min, max }]; returns new sizes.
+  function enlargeStack(total, items, i) {
+    const x = items[i];
+    const others = items.filter((_, j) => j !== i);
+    const room = Math.max(x.size, total - sumN(others.map((o) => o.min)));
+    let target = Math.min(clampN(2 * x.size, x.size, x.max), room);
+    const shared = flexSizes(total - target, others.map((o) => ({ w: o.size, min: o.min, max: o.max })));
+    const spare = total - target - sumN(shared); // height the others cannot use (their content caps) goes back to X
+    if (spare > 0.5) target = Math.min(target + spare, Math.max(x.max, x.size));
+    let n = 0;
+    return items.map((_, j) => (j === i ? target : shared[n++]));
+  }
+
+  // Enlarge a ledger X to twice its area. The board and Agents heights are multiplied by k; the row takes the rest of the
+  // height; the open sibling's area is multiplied by k (its width is its area over the row height); X takes the rest of the width.
+  // Floors and caps pin a section and the rest share again, so k is solved for the area X reaches (bisection), and X takes the
+  // largest area the floors leave when 2x cannot be reached.
+  // c: { total, W, hb, hg, hl, wx, ws, spine, fb, fg, fl, fws, capb, capg, capl }; hb, hg are null when not an open stack item,
+  // ws is null when the sibling is folded (it then keeps `spine` px).
+  function enlargeLedger(c) {
+    const a0 = c.wx * c.hl;
+    const solve = (k) => {
+      const hb = c.hb == null ? 0 : clampN(k * c.hb, c.fb, c.capb);
+      const hg = c.hg == null ? 0 : clampN(k * c.hg, c.fg, c.capg);
+      const hl = clampN(c.total - hb - hg, c.fl, c.capl);
+      const ws = c.ws == null ? c.spine : Math.max(c.fws, (k * c.ws * c.hl) / hl);
+      const wx = c.W - ROW_GAP - ws;
+      return { hb: c.hb == null ? null : hb, hg: c.hg == null ? null : hg, hl, ws, wx, area: wx * hl };
+    };
+    let lo = 0, hi = 1;
+    if (solve(0).area > 2 * a0) {
+      for (let n = 0; n < 60; n++) { const mid = (lo + hi) / 2; if (solve(mid).area >= 2 * a0) lo = mid; else hi = mid; }
+    }
+    return solve(lo);
+  }
+
+  // The stored layout (section 5.6): fractions of the open sections, a folded one is 0. `base` is the default measured at the first press.
+  const cloneState = (st) => JSON.parse(JSON.stringify(st));
+  function normalized(o) {
+    const t = sumN(Object.values(o).filter((v) => v > 0));
+    if (t > 0) for (const k of Object.keys(o)) if (o[k] != null) o[k] = o[k] / t;
+    return o;
+  }
+  // m: measured sizes of the open sections: { board, agents, ledgers } heights (null when not open), { pr, is } widths
+  function stateFromMeasure(m) {
+    const stack = {}, base = {};
+    const hs = stackKeys.map((k) => m[k] ?? 0);
+    fractions(hs).forEach((f, n) => { if (m[stackKeys[n]] != null) stack[stackKeys[n]] = f; });
+    const row = {};
+    fractions([m.pr ?? 0, m.is ?? 0]).forEach((f, n) => { row[['pr', 'is'][n]] = f; });
+    Object.assign(base, stack, row);
+    return { v: 1, stack, row, base, folded: [] };
+  }
+  const isLedger = (k) => k === 'pr' || k === 'is';
+  const sibling = (k) => (k === 'pr' ? 'is' : 'pr');
+  function foldKey(st, key) {
+    const next = cloneState(st);
+    if (!next.folded.includes(key)) next.folded.push(key);
+    if (isLedger(key)) {
+      next.row[key] = 0;
+      normalized(next.row);
+      if (next.folded.includes('pr') && next.folded.includes('is')) { next.stack.ledgers = 0; normalized(next.stack); }
+    } else {
+      next.stack[key] = 0;
+      normalized(next.stack);
+    }
+    return next;
+  }
+  // Unfold returns the section to its default size (its `base` share); the open ones shrink in proportion.
+  function unfoldKey(st, key) {
+    const next = cloneState(st);
+    next.folded = next.folded.filter((k) => k !== key);
+    const share = (k, dflt) => clampN(next.base[k] ?? dflt, 0.05, 0.9);
+    const give = (o, k, p) => { for (const j of Object.keys(o)) if (j !== k && o[j] > 0) o[j] *= 1 - p; o[k] = p; normalized(o); };
+    if (isLedger(key)) {
+      if (next.folded.includes(sibling(key))) {
+        next.row = { pr: 0, is: 0, [key]: 1 }; // the row was a line of two heads: it comes back at its default height
+        give(next.stack, 'ledgers', share('ledgers', 0.25));
+      } else {
+        give(next.row, key, share(key, 0.5));
+      }
+    } else {
+      give(next.stack, key, share(key, 0.25));
+    }
+    return next;
+  }
+  // After Enlarge: the solved sizes become the new fractions. stack: { board?, agents?, ledgers? } heights; row: { pr, is } widths or null.
+  function withSizes(st, stack, row) {
+    const next = cloneState(st);
+    const f = fractions(stackKeys.map((k) => stack[k] ?? 0));
+    stackKeys.forEach((k, n) => {
+      if (stack[k] != null) next.stack[k] = f[n];
+      else if (k === 'agents' && !next.folded.includes('agents')) delete next.stack.agents;
+      else next.stack[k] = 0;
+    });
+    if (row && row.pr != null && row.is != null) { const r = fractions([row.pr, row.is]); next.row = { pr: r[0], is: r[1] }; }
+    return next;
+  }
+  function sanitizeState(raw) {
+    const num = (v) => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1;
+    try {
+      const st = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      if (!st || st.v !== 1 || !Array.isArray(st.folded) || !st.stack || !st.row || !st.base) return null;
+      if (!['board', 'ledgers'].every((k) => num(st.stack[k])) || !(st.stack.agents == null || num(st.stack.agents))) return null;
+      if (!num(st.row.pr) || !num(st.row.is)) return null;
+      if (!Object.values(st.base).every(num)) return null;
+      const folded = [...new Set(st.folded.filter((k) => ['board', 'agents', 'pr', 'is'].includes(k)))];
+      if (folded.length >= 4 || (folded.length >= 3 && !folded.includes('agents'))) return null; // one section stays open
+      const { board, agents, ledgers } = st.stack;
+      return { v: 1, stack: agents == null ? { board, ledgers } : { board, agents, ledgers }, row: { pr: st.row.pr, is: st.row.is }, base: { ...st.base }, folded };
+    } catch { return null; }
+  }
+  // </layout-math>
+
+  const LAYOUT_KEY = 'stampboard-layout';
+  const RZ = {
+    board: { enlarge: 'enlargeBoard', body: 'bodyBoard', ctl: 'board', name: 'secBoard' },
+    agents: { enlarge: 'enlargeAgents', body: 'bodyAgents', ctl: 'agList', name: 'agents' },
+    pr: { enlarge: 'enlargePr', body: 'bodyPr', ctl: 'prList', name: 'prs' },
+    is: { enlarge: 'enlargeIs', body: 'bodyIs', ctl: 'isList', name: 'issues' },
+  };
+  const secEl = { board: $('.board'), agents: $('#agents'), pr: $('.ledger.pr'), is: $('.ledger.is') };
+  const rowEl = $('.ledgers');
+  const FIXED = matchMedia('(min-width: 1281px) and (min-height: 761px)');
+  let layout = sanitizeState(store.get(LAYOUT_KEY));
+  const rzSvg = (d) => `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${d}</svg>`;
+  const ICON = {
+    enlarge: rzSvg('<path d="M9.5 2.5h4v4"/><path d="M13.5 2.5 9.2 6.8"/><path d="M6.5 13.5h-4v-4"/><path d="M2.5 13.5l4.3-4.3"/>'),
+    fold: rzSvg('<path d="M2.5 3h11"/><path d="M4.5 11 8 7.5l3.5 3.5"/>'),
+    unfold: rzSvg('<path d="M2.5 13h11"/><path d="M4.5 5 8 8.5 11.5 5"/>'),
+    foldSide: rzSvg('<path d="M3 4.5 6.5 8 3 11.5"/><path d="M13 4.5 9.5 8l3.5 3.5"/>'),
+    unfoldSide: rzSvg('<path d="M6 4.5 2.5 8 6 11.5"/><path d="M10 4.5l3.5 3.5-3.5 3.5"/>'),
+  };
+  for (const [key, def] of Object.entries(RZ)) {
+    const host = $(`[data-rz="${key}"]`);
+    host.innerHTML = `<button type="button" class="rz-enl" data-act="enlarge" data-key="${key}" aria-label="${esc(L[def.enlarge])}" title="${esc(L.tipEnlarge)}">${ICON.enlarge}</button>`
+      + `<button type="button" class="rz-fold" data-act="fold" data-key="${key}" aria-label="${esc(L[def.body])}" aria-controls="${def.ctl}"></button>`;
+  }
+
+  const foldedSet = () => new Set(layout ? layout.folded : []);
+  const bodyOver = (el) => Math.max(0, el.scrollHeight - el.clientHeight);
+  // The rendered sizes of the open sections, with the floors and the content caps the solver needs.
+  function measure() {
+    const folded = foldedSet();
+    const open = (k) => !folded.has(k);
+    const rect = (el) => el.getBoundingClientRect();
+    const agOn = !secEl.agents.hidden && open('agents');
+    const rowOn = open('pr') || open('is');
+    const m = { folded, W: rect(rowEl).width };
+    m.board = open('board') ? rect(secEl.board).height : null;
+    m.agents = agOn ? rect(secEl.agents).height : null;
+    m.ledgers = rowOn ? rect(rowEl).height : null;
+    m.pr = open('pr') ? rect(secEl.pr).width : null;
+    m.is = open('is') ? rect(secEl.is).width : null;
+    m.over = { board: bodyOver($('#board')), agents: bodyOver($('#agList')), pr: bodyOver($('#prList')), is: bodyOver($('#isList')) };
+    m.floor = { board: 200, agents: $('#agList .entry') ? 104 : 0, ledgers: (rowEl.querySelector('.l-filters:not([hidden])') ? 34 : 0) + 150 };
+    m.cap = {
+      board: (m.board ?? 0) + m.over.board,
+      agents: (m.agents ?? 0) + m.over.agents,
+      ledgers: (m.ledgers ?? 0) + Math.max(open('pr') ? m.over.pr : 0, open('is') ? m.over.is : 0),
+    };
+    return m;
+  }
+  // What Enlarge would do now: the new sizes, or the reason it is blocked.
+  function plan(key) {
+    const m = measure();
+    const stackSizes = {};
+    for (const k of stackKeys) if (m[k] != null) stackSizes[k] = m[k];
+    const total = sumN(Object.values(stackSizes));
+    const out = { reason: null, stack: { ...stackSizes }, row: m.pr != null && m.is != null ? { pr: m.pr, is: m.is } : null };
+    if (m.over[key] === 0) { out.reason = L.showsAll; return out; }
+    let gain;
+    if (isLedger(key)) {
+      const sib = sibling(key);
+      const r = enlargeLedger({
+        total, W: m.W, hb: m.board, hg: m.agents, hl: m.ledgers, wx: m[key], ws: m[sib], spine: SPINE_W,
+        fb: m.floor.board, fg: m.floor.agents, fl: m.floor.ledgers, fws: sib === 'pr' ? 560 : 480,
+        capb: m.cap.board, capg: m.cap.agents, capl: m.cap.ledgers,
+      });
+      gain = (r.wx * r.hl) / (m[key] * m.ledgers) - 1;
+      if (r.hb != null) out.stack.board = r.hb;
+      if (r.hg != null) out.stack.agents = r.hg;
+      out.stack.ledgers = r.hl;
+      out.row = m[sib] != null ? { [key]: r.wx, [sib]: r.ws } : null;
+    } else {
+      const keys = Object.keys(stackSizes);
+      const items = keys.map((k) => ({ size: stackSizes[k], min: m.floor[k], max: m.cap[k] }));
+      const next = enlargeStack(total, items, keys.indexOf(key));
+      keys.forEach((k, n) => { out.stack[k] = next[n]; });
+      gain = out.stack[key] / stackSizes[key] - 1;
+    }
+    if (gain < MIN_GAIN) out.reason = L.noRoom;
+    return out;
+  }
+  // Without a stored layout the first press measures the default; in the flowing layout there is nothing to measure, so use typical shares.
+  function startState() {
+    if (layout) return layout;
+    const m = measure();
+    if (!FIXED.matches) return stateFromMeasure({ board: 0.5, agents: m.agents == null ? null : 0.25, ledgers: 0.25, pr: 0.5, is: 0.5 });
+    return stateFromMeasure(m);
+  }
+  function commit(next) {
+    layout = next;
+    store.set(LAYOUT_KEY, JSON.stringify(layout));
+    applyLayout();
+    syncResize();
+  }
+  let liveFlip = false;
+  const say = (t) => { liveFlip = !liveFlip; $('#rzLive').textContent = t + (liveFlip ? '' : ' '); };
+
+  function applyLayout() {
+    const folded = foldedSet();
+    $('.app').classList.toggle('sized', !!layout);
+    for (const k of Object.keys(RZ)) secEl[k].classList.toggle('folded', folded.has(k));
+    $('#filters').hidden = $('#board').hidden = folded.has('board');
+    $('#agList').hidden = folded.has('agents');
+    $('#prList').hidden = folded.has('pr');
+    $('#isList').hidden = folded.has('is');
+    const bothFolded = folded.has('pr') && folded.has('is');
+    secEl.pr.classList.toggle('spine', folded.has('pr') && !bothFolded);
+    secEl.is.classList.toggle('spine', folded.has('is') && !bothFolded);
+    rowEl.classList.toggle('rowfolded', bothFolded);
+    $('#resetLayout').hidden = !layout;
+    if (!layout) return;
+    const agOn = !secEl.agents.hidden && !folded.has('agents');
+    if (agOn && layout.stack.agents == null) {
+      // Agents appears with no stored weight: it enters at the weight of its default cap, the others shrink in proportion
+      const w = clampN(Math.min(0.34 * innerHeight, 360) / Math.max(innerHeight - 160, 1), 0.05, 0.5);
+      for (const k of ['board', 'ledgers']) layout.stack[k] *= 1 - w;
+      layout.stack.agents = w;
+      store.set(LAYOUT_KEY, JSON.stringify(layout));
+    }
+    const weights = (list, prop) => {
+      const t = sumN(list.map(([, w]) => w)) || 1;
+      for (const [node, w] of list) node.style.setProperty(prop, String(Math.round((w / t) * 1e6) / 1e3));
+    };
+    const st = [];
+    if (!folded.has('board')) st.push([secEl.board, layout.stack.board]);
+    if (agOn) st.push([secEl.agents, layout.stack.agents]);
+    if (!bothFolded) st.push([rowEl, layout.stack.ledgers]);
+    weights(st, '--sw');
+    const rw = [];
+    for (const k of ['pr', 'is']) if (!folded.has(k)) rw.push([secEl[k], layout.row[k]]);
+    weights(rw, '--rw');
+  }
+
+  const setBlocked = (btn, reason, tip) => {
+    if (reason) { btn.setAttribute('aria-disabled', 'true'); btn.setAttribute('aria-description', reason); btn.title = reason; }
+    else { btn.removeAttribute('aria-disabled'); btn.removeAttribute('aria-description'); btn.title = tip; }
+  };
+  const iconOf = new WeakMap();
+  function syncResize() {
+    const folded = foldedSet();
+    const agVisible = !secEl.agents.hidden;
+    const openCount = ['board', 'agents', 'pr', 'is'].filter((k) => !folded.has(k) && (k !== 'agents' || agVisible)).length;
+    for (const key of Object.keys(RZ)) {
+      const host = $(`[data-rz="${key}"]`);
+      const isFolded = folded.has(key);
+      const fold = host.querySelector('.rz-fold'), enl = host.querySelector('.rz-enl');
+      fold.setAttribute('aria-expanded', String(!isFolded));
+      const icon = isLedger(key) ? (isFolded ? ICON.unfoldSide : ICON.foldSide) : (isFolded ? ICON.unfold : ICON.fold);
+      if (iconOf.get(fold) !== icon) { iconOf.set(fold, icon); fold.innerHTML = icon; }
+      setBlocked(fold, !isFolded && openCount <= 1 ? L.lastOpen : null, isFolded ? L.tipUnfold : L.tipFold);
+      enl.hidden = isFolded;
+      if (!isFolded && FIXED.matches && !secEl[key].hidden) setBlocked(enl, plan(key).reason, L.tipEnlarge);
+      else setBlocked(enl, null, L.tipEnlarge);
+    }
+  }
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.rz button');
+    if (!btn || btn.getAttribute('aria-disabled') === 'true') return;
+    const key = btn.dataset.key;
+    if (btn.dataset.act === 'enlarge') {
+      const p = plan(key);
+      if (p.reason) return;
+      commit(withSizes(startState(), p.stack, p.row));
+      say(L.enlarged(L[RZ[key].name]));
+    } else {
+      commit(foldedSet().has(key) ? unfoldKey(startState(), key) : foldKey(startState(), key));
+    }
+  });
+  $('#resetLayout').addEventListener('click', () => {
+    layout = null;
+    store.remove(LAYOUT_KEY);
+    for (const el of [secEl.board, secEl.agents, rowEl, secEl.pr, secEl.is]) { el.style.removeProperty('--sw'); el.style.removeProperty('--rw'); }
+    applyLayout();
+    syncResize();
+    say(L.layoutReset);
+    $('[data-rz="board"] .rz-fold').focus(); // the Reset button hid itself: keep focus on the page
+  });
+  let rzFrame = 0;
+  addEventListener('resize', () => { cancelAnimationFrame(rzFrame); rzFrame = requestAnimationFrame(syncResize); });
+  applyLayout();
 
   // ---------- Drawing ----------
   function render() {
@@ -787,6 +1184,8 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
         $('#headline').textContent = L.unreachableHead;
         $('#subline').textContent = L.unreachableSub;
       }
+      foldedAlert();
+      syncResize();
       tick();
       return;
     }
@@ -859,19 +1258,32 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
     $('#foot').innerHTML = parts.map((p) => `<span>${esc(p)}</span>`).join('')
       + '<span class="credit">Stampboard · <a href="https://derinbay.com" target="_blank" rel="noopener">Derinbay Labs</a></span>';
 
+    foldedAlert();
+    syncResize();
     tick();
   }
 
-  function alertHtml() {
+  // A folded board hides the list that holds the alert, so the bar's headline carries it.
+  function foldedAlert() {
+    if (!secEl.board.classList.contains('folded')) return;
+    const a = alertText();
+    if (a) $('#headline').innerHTML = `<strong class="h-alert">${esc(a[0])}</strong> ${esc(a[1])}`;
+  }
+  function alertText() {
     let text = null;
     if (unreachable) {
       text = L.unreachable;
     } else {
       const e = data && data.error;
-      if (!e) return '';
+      if (!e) return null;
       text = L.errors[e.code] || [L.scanFailed, e.message];
       if (e.code === 'rate_limited' && e.resetAt) text = [text[0], `${L.resetsAt(hhmm(e.resetAt))} ${text[1]}`];
     }
+    return text;
+  }
+  function alertHtml() {
+    const text = alertText();
+    if (!text) return '';
     return `<div class="alert" role="alert"><strong>${esc(text[0])}</strong><span>${esc(text[1])}</span></div>`;
   }
 
