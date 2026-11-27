@@ -195,8 +195,9 @@ const seed = (count) => ({
   notes: Array.from({ length: count }, (_, i) => ({ id: `s${i}`, text: `Sample note ${i}`, x: { e: 'l', o: 48 + (i % 20) * 24 }, y: { e: 't', o: 180 + (i % 10) * 24 }, z: i })),
 });
 const noteRects = (page) => page.evaluate(() => [...document.querySelectorAll('.note')].map((el) => {
-  const b = el.getBoundingClientRect();
-  return { id: el.dataset.id, text: el.querySelector('.n-text').value, left: b.left, top: b.top, right: b.right, bottom: b.bottom, w: b.width, h: b.height, z: Number(el.style.zIndex) };
+  // the layout box: a rotated note's bounding box is bigger, so positions are read from the unrotated box
+  const left = el.offsetLeft, top = el.offsetTop;
+  return { id: el.dataset.id, text: el.querySelector('.n-text').value, left, top, right: left + el.offsetWidth, bottom: top + el.offsetHeight, w: el.offsetWidth, h: el.offsetHeight, z: Number(el.style.zIndex), angle: parseFloat(el.style.getPropertyValue('--a')) };
 }));
 const footH = (page) => page.evaluate(() => document.querySelector('.foot').getBoundingClientRect().height);
 async function noFit(page, label) {
@@ -216,8 +217,8 @@ async function notesRun(width, height, scheme, lang = 'en') {
   const logs = [];
   page.on('console', (m) => logs.push(m.text()));
   const T = lang === 'tr'
-    ? { newNote: 'Yeni not', gather: 'Notları topla', move: (t) => `Notu taşı: ${t}`, del: (t) => `Notu sil: ${t}`, group: (t) => `Not: ${t}`, deleted: 'Not silindi.', gathered: (n) => `${n} not toplandı.`, region: 'Notlar', placed: 'Not yerleşti.' }
-    : { newNote: 'New note', gather: 'Gather notes', move: (t) => `Move note: ${t}`, del: (t) => `Delete note: ${t}`, group: (t) => `Note: ${t}`, deleted: 'Note deleted.', gathered: (n) => `${n} notes gathered.`, region: 'Notes', placed: 'Note placed.' };
+    ? { newNote: 'Yeni not', gather: 'Notları topla', move: (t) => `Notu taşı: ${t}`, menu: (t) => `Not seçenekleri: ${t}`, group: (t) => `Not: ${t}`, deleted: 'Not silindi.', gathered: (n) => `${n} not toplandı.`, region: 'Notlar', placed: 'Not yerleşti.' }
+    : { newNote: 'New note', gather: 'Gather notes', move: (t) => `Move note: ${t}`, menu: (t) => `Note options: ${t}`, group: (t) => `Note: ${t}`, deleted: 'Note deleted.', gathered: (n) => `${n} notes gathered.`, region: 'Notes', placed: 'Note placed.' };
   try {
     await page.goto(`http://localhost:${port}/?lang=${lang}`);
     await page.waitForSelector('#prList .entry');
@@ -239,7 +240,6 @@ async function notesRun(width, height, scheme, lang = 'en') {
     near(a.bottom, height - 44, 0.5, `${tag} new note bottom`);
     near(a.w, 240, 0.5, 'note width'); near(a.h, 216, 0.5, 'note height');
     assert.equal(await page.getAttribute('.note', 'aria-label'), T.group('Sample note A'));
-    assert.equal(await page.textContent('.n-title'), 'Sample note A');
     await page.waitForTimeout(600);
     await page.reload();
     await page.waitForSelector('.note');
@@ -247,7 +247,7 @@ async function notesRun(width, height, scheme, lang = 'en') {
     assert.equal(a.text, 'Sample note A', 'the note survives a reload');
     near(a.right, width - 24, 0.5, `${tag} reload keeps the place`);
     assert.equal(await page.getAttribute('.n-move', 'aria-label'), T.move('Sample note A'));
-    assert.equal(await page.getAttribute('.n-del', 'aria-label'), T.del('Sample note A'));
+    assert.equal(await page.getAttribute('.n-menu-btn', 'aria-label'), T.menu('Sample note A'));
     assert.equal(await page.textContent('#gatherNotes'), `${T.gather}1`);
     assert.ok(!(await page.title()).includes('Sample'), 'the title never carries note text');
 
@@ -264,11 +264,13 @@ async function notesRun(width, height, scheme, lang = 'en') {
     await page.click('#nStatus .n-undo').catch(() => {});
 
     // Drag by the header: the note follows and snaps to the 24px grid
-    const h = await page.locator('.note .n-title').boundingBox();
-    await page.mouse.move(h.x + 20, h.y + 10);
+    await page.waitForTimeout(700); // any smooth move ends
+    const h = await page.locator('.note .n-head').boundingBox();
+    await page.mouse.move(h.x + h.width / 2, h.y + 10);
     await page.mouse.down();
     await page.mouse.move(h.x - 300, h.y - 200, { steps: 8 });
     await page.mouse.move(h.x - 313, h.y - 217, { steps: 3 });
+    assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('.note')).transform.startsWith('matrix(')), true);
     assert.equal(await page.evaluate(() => document.querySelector('.note').classList.contains('lifted')), true, 'lifted while dragging');
     await page.mouse.up();
     [a] = await noteRects(page);
@@ -321,13 +323,16 @@ async function notesRun(width, height, scheme, lang = 'en') {
     assert.equal(before.length, 4);
     await noFit(page, `${tag} spread`);
     await page.click('#gatherNotes');
+    await page.waitForTimeout(700); // the smooth move ends
     assert.equal(await page.textContent('#nStatus .n-msg'), T.gathered(4));
     assert.equal(await page.evaluate(() => document.activeElement.id), 'gatherNotes', 'focus stays on Gather');
     const piled = (await noteRects(page)).sort((x, y) => y.z - x.z);
     piled.forEach((r, i) => {
-      near(r.right, width - 24, 0.5, `${tag} pile right #${i}`);
-      near(r.bottom, height - 44 - i * 36, 0.5, `${tag} pile bottom #${i}`);
+      assert.ok(Math.abs(r.right - (width - 24)) <= 18.5 && Math.abs(r.bottom - (height - 44)) <= 18.5, `${tag} pile #${i} is within 18px of the corner slot`);
+      assert.ok(Math.abs(r.right - (width - 24)) >= 7.5 && Math.abs(r.bottom - (height - 44)) >= 7.5, `${tag} pile #${i} is off by at least 8px: not a tidy stack`);
+      assert.ok(Math.abs(r.angle) <= 8, `${tag} pile angle #${i}`);
     });
+    assert.ok(new Set(piled.map((r) => `${r.left},${r.top},${r.angle}`)).size === 4, `every note lies differently ${JSON.stringify(piled.map((r) => [r.left, r.top, r.angle]))}`);
     assert.deepEqual(piled.map((r) => r.text), ['Sample note D', 'Sample note C', 'Sample note B', 'Sample note A'], 'the pile keeps the z-order');
     assert.ok((await footH(page)) <= 18, `${tag}: footer one line with a status (${await footH(page)})`);
     await noFit(page, `${tag} gathered`);
@@ -335,19 +340,21 @@ async function notesRun(width, height, scheme, lang = 'en') {
     assert.equal(await page.evaluate(() => { const b = document.querySelector('#gatherNotes').getBoundingClientRect(); return document.elementFromPoint(b.left + 4, b.top + 8).closest('#gatherNotes') !== null; }), true);
     // Undo returns every note
     await page.click('#nStatus .n-undo');
+    await page.waitForTimeout(700); // the smooth move ends
     const back = await noteRects(page);
     for (const r of back) { const o = before.find((x) => x.id === r.id); near(r.left, o.left, 0.5, 'undo left'); near(r.top, o.top, 0.5, 'undo top'); }
-    await page.click('#gatherNotes');
-    await page.waitForTimeout(100);
+    await page.click('#gatherNotes'); // gather once more, then compare the exact positions and angles after a reload
+    await page.waitForTimeout(700);
+    const messy = (await noteRects(page)).sort((x, y) => y.z - x.z);
     await page.reload();
     await page.waitForSelector('.note');
     const afterReload = (await noteRects(page)).sort((x, y) => y.z - x.z);
-    near(afterReload[0].right, width - 24, 0.5, 'the pile survives a reload');
-    near(afterReload[3].bottom, height - 44 - 3 * 36, 0.5, 'the pile survives a reload');
+    assert.deepEqual(afterReload.map((r) => [r.text, r.left, r.top, r.angle]), messy.map((r) => [r.text, r.left, r.top, r.angle]), 'the messy pile survives a reload exactly: positions and angles');
 
     // Delete with Undo; the footer stays one line
-    await page.locator('.note .n-del').first().focus();
+    await page.locator('.note .n-menu-btn').first().focus();
     await page.keyboard.press('Enter');
+    await page.click('.n-menu [data-act="delete"]');
     assert.equal(await page.textContent('#nStatus .n-msg'), T.deleted);
     assert.equal((await noteRects(page)).length, 3);
     assert.ok((await footH(page)) <= 18, `${tag}: footer one line after delete`);
@@ -356,8 +363,8 @@ async function notesRun(width, height, scheme, lang = 'en') {
     assert.equal(await page.isHidden('#nStatus'), true, 'the status clears');
 
     // Light and dark tokens
-    const bg = await page.evaluate(() => getComputedStyle(document.querySelector('.note')).backgroundColor);
-    assert.equal(bg, scheme === 'dark' ? 'rgb(57, 51, 34)' : 'rgb(243, 228, 166)', 'the manila surface');
+    const bg = await page.evaluate(() => { const c = document.createElement('canvas').getContext('2d'); c.fillStyle = getComputedStyle(document.querySelector('.n-paper')).backgroundColor; c.fillRect(0, 0, 1, 1); const d = c.getImageData(0, 0, 1, 1).data; return (d[0] + d[1] + d[2]) / 3; });
+    assert.ok(scheme === 'dark' ? bg < 90 : bg > 200, `the paper is ${scheme} (${bg})`);
 
     // Privacy: the text left the page nowhere
     assert.ok(requests.every((u) => !u.includes('Sample note')), 'no request carries note text');
@@ -434,6 +441,248 @@ async function notesDemo() {
   }
 }
 
+// The realism pass (#81): storage migration, the right-click menu (mouse and keyboard), every menu action, bullets,
+// the paper never overflowing, the messy pile and pass-through clicks. Note text here is invented.
+async function notesRealism(scheme = 'light', reduced = false) {
+  const width = 1633, height = 930;
+  const tag = `notes realism ${scheme}${reduced ? ' reduced-motion' : ''}`;
+  const ctx = await browser.newContext({ viewport: { width, height }, colorScheme: scheme, reducedMotion: reduced ? 'reduce' : 'no-preference' });
+  await asOrdinary(ctx);
+  const legacy = { v: 1, notes: [
+    { id: 'm1', text: 'Sample legacy title\nsecond line', x: { e: 'l', o: 120 }, y: { e: 't', o: 200 }, z: 0 },
+    { id: 'm2', text: 'Sample corner note', x: { e: 'r', o: 24 }, y: { e: 'b', o: 44 }, z: 1 },
+    { id: 'm3', text: 'Sample third note', x: { e: 'l', o: 480 }, y: { e: 't', o: 200 }, z: 2 },
+  ] };
+  await ctx.addInitScript((v) => { if (!localStorage.getItem('stampboard-notes')) localStorage.setItem('stampboard-notes', v); }, JSON.stringify(legacy));
+  const page = await ctx.newPage();
+  const requests = [], logs = [];
+  page.on('request', (r) => requests.push(r.url() + (r.postData() || '')));
+  page.on('console', (m) => logs.push(m.text()));
+  const stored = () => page.evaluate(() => JSON.parse(localStorage.getItem('stampboard-notes')));
+  const rec = async (id) => (await stored()).notes.find((n) => n.id === id);
+  const note = (id) => page.locator(`.note[data-id="${id}"]`);
+  const inNote = (id) => page.evaluate((i) => !!document.activeElement.closest(`.note[data-id="${i}"]`), id);
+  const menuOpen = () => page.locator('.n-menu').count();
+  const rightClick = (id, x = 60, y = 120) => note(id).click({ button: 'right', position: { x, y } });
+  try {
+    await page.goto(`http://localhost:${port}/?lang=en`);
+    await page.waitForSelector('.note');
+    await ready(page);
+
+    // Migration: a v1 note loads with its text and position; its first line is the title; the next save is v2 with defaults
+    let rs = await noteRects(page);
+    const m1 = rs.find((r) => r.id === 'm1');
+    assert.equal(m1.text, 'Sample legacy title\nsecond line');
+    assert.deepEqual([m1.left, m1.top], [120, 200]);
+    assert.equal(await note('m1').getAttribute('aria-label'), 'Note: Sample legacy title');
+    assert.equal((await stored()).v, 1, 'opening does not rewrite what is stored');
+    await note('m1').locator('.n-head').click({ position: { x: 100, y: 10 } });
+    let s = await stored();
+    assert.equal(s.v, 2);
+    assert.deepEqual([s.notes[0].font, s.notes[0].size, s.notes[0].color, s.notes[0].pinned, s.notes[0].angle], ['sans', 14, 'yellow', false, 0]);
+    assert.equal(s.notes[0].text, 'Sample legacy title\nsecond line');
+
+    // The paper: no ruled lines, the grain layer and the curl shadows exist, text is drawn without a scrollbar
+    const look = await page.evaluate(() => {
+      const el = document.querySelector('.note[data-id="m1"]'), ta = el.querySelector('.n-text');
+      return { img: getComputedStyle(ta).backgroundImage, curl: getComputedStyle(el, '::before').boxShadow, grain: getComputedStyle(el.querySelector('.n-paper'), '::after').backgroundImage, sb: getComputedStyle(ta).scrollbarWidth, top: getComputedStyle(el).boxShadow };
+    });
+    assert.equal(look.img, 'none', 'no ruled lines');
+    assert.ok(look.curl !== 'none' && look.grain.includes('feTurbulence'), 'curl shadow and noise grain');
+    assert.equal(look.sb, 'none');
+
+    // Right-click opens the note's own menu, kept inside the screen edges
+    await rightClick('m2', 230, 200);
+    assert.equal(await menuOpen(), 1);
+    let box = await page.locator('.n-menu').boundingBox();
+    assert.ok(box.x >= 8 && box.y >= 8 && box.x + box.width <= width - 8 && box.y + box.height <= height - 8, 'the menu stays inside the screen');
+    assert.equal(await page.locator('.n-menu [data-act="color"]').count(), 5);
+    assert.deepEqual(await page.locator('.n-menu [data-act="color"]').evaluateAll((bs) => bs.map((b) => b.getAttribute('aria-label'))), ['Classic Yellow', 'Pastel Pink', 'Mint Green', 'Light Blue', 'Orange']);
+    assert.equal(await page.locator('.n-menu [data-act="font"]').count(), 5);
+    await page.keyboard.press('Escape');
+    assert.equal(await menuOpen(), 0);
+    assert.equal(await inNote('m2'), true, 'focus returns to the note when the menu closes');
+
+    // Colour
+    await rightClick('m1');
+    await page.click('.n-menu [data-act="color"][data-v="pink"]');
+    assert.equal(await menuOpen(), 0);
+    assert.equal(await note('m1').getAttribute('data-c'), 'pink');
+    assert.equal((await rec('m1')).color, 'pink');
+    assert.equal(await inNote('m1'), true);
+    const lum = (c) => page.evaluate((id) => { const x = document.createElement('canvas').getContext('2d'); x.fillStyle = getComputedStyle(document.querySelector(`.note[data-id="${id}"] .n-paper`)).backgroundColor; x.fillRect(0, 0, 1, 1); const d = x.getImageData(0, 0, 1, 1).data; return [d[0], d[1], d[2]]; }, c);
+    assert.notDeepEqual(await lum('m1'), await lum('m2'), 'pink differs from yellow');
+    // Font
+    await rightClick('m1');
+    await page.click('.n-menu [data-act="font"][data-v="kalam"]');
+    assert.equal(await note('m1').getAttribute('data-f'), 'kalam');
+    assert.ok((await note('m1').evaluate((el) => getComputedStyle(el.querySelector('.n-text')).fontFamily)).includes('Kalam'));
+    assert.equal((await rec('m1')).font, 'kalam');
+    // Size: A+ and A- stay open, so they can be clicked repeatedly
+    await rightClick('m1');
+    await page.click('.n-menu [data-act="up"]');
+    await page.click('.n-menu [data-act="up"]');
+    assert.equal(await menuOpen(), 1, 'the menu stays open while resizing');
+    assert.equal((await rec('m1')).size, 18);
+    await page.click('.n-menu [data-act="down"]');
+    assert.equal((await rec('m1')).size, 16);
+    // Tilt
+    await page.click('.n-menu [data-act="random"]');
+    const a1 = (await rec('m1')).angle;
+    assert.ok(a1 >= -4 && a1 <= 4);
+    assert.equal(await menuOpen(), 1);
+    await page.click('.n-menu [data-act="reset"]');
+    assert.equal((await rec('m1')).angle, 0);
+    assert.equal(await note('m1').evaluate((el) => el.style.getPropertyValue('--a')), '0deg');
+    // Pin to front: the dog-ear shows and the note stays on top
+    await page.click('.n-menu [data-act="pin"]');
+    assert.equal(await menuOpen(), 0);
+    assert.equal((await rec('m1')).pinned, true);
+    assert.equal(await note('m1').locator('.n-ear').isVisible(), true, 'the dog-ear shows');
+    await note('m3').locator('.n-head').click({ position: { x: 100, y: 10 } }); // the other notes come to the front, the pinned one stays above
+    rs = await noteRects(page);
+    assert.ok(rs.find((r) => r.id === 'm1').z > rs.find((r) => r.id === 'm3').z, 'a pinned note stays above');
+    // everything survives a reload
+    await page.reload();
+    await page.waitForSelector('.note');
+    const back = await rec('m1');
+    assert.deepEqual([back.font, back.size, back.color, back.pinned, back.angle], ['kalam', 16, 'pink', true, 0]);
+    assert.equal(await note('m1').getAttribute('data-c'), 'pink');
+    assert.equal(await note('m1').locator('.n-ear').isVisible(), true);
+
+    // Pass-through: empty parts of the notes layer, and the cut corner of a pinned note, never block the board
+    const hit = (x, y) => page.evaluate(([px, py]) => { const e = document.elementFromPoint(px, py); return e ? !!e.closest('.notes') : null; }, [x, y]);
+    assert.equal(await hit(900, 500), false, 'an empty spot reaches the board');
+    assert.equal(await hit(120 + 120, 200 + 100), true, 'a note is hit');
+
+    // Keyboard path: Shift+F10 and the context-menu key; arrows move; Escape closes and focus returns
+    await note('m3').locator('.n-text').focus();
+    await page.keyboard.press('Shift+F10');
+    assert.equal(await menuOpen(), 1);
+    assert.equal(await page.evaluate(() => !!document.activeElement.closest('.n-menu')), true, 'focus moves into the menu');
+    const f1 = await page.evaluate(() => document.activeElement.getAttribute('aria-label') || document.activeElement.textContent);
+    await page.keyboard.press('ArrowRight');
+    const f2 = await page.evaluate(() => document.activeElement.getAttribute('aria-label') || document.activeElement.textContent);
+    assert.notEqual(f1, f2, 'arrow keys move through the menu');
+    await page.keyboard.press('Enter'); // picks a colour; the menu closes and focus returns to the note
+    assert.equal(await menuOpen(), 0);
+    assert.equal(await inNote('m3'), true, 'focus returns to the note after a choice');
+    await page.keyboard.press('ContextMenu');
+    assert.equal(await menuOpen(), 1);
+    await page.keyboard.press('Escape');
+    assert.equal(await inNote('m3'), true);
+    await note('m3').locator('.n-menu-btn').focus();
+    await page.keyboard.press('Enter');
+    assert.equal(await menuOpen(), 1, 'the Note options button opens the menu too');
+    assert.equal(await page.locator('.n-menu-btn[aria-expanded="true"]').count(), 1);
+    await page.keyboard.press('Escape');
+    assert.equal(await page.evaluate(() => document.activeElement.classList.contains('n-menu-btn')), true, 'focus returns to the button');
+
+    // Delete from the menu, then Undo brings the note back with its look
+    await rightClick('m1');
+    await page.click('.n-menu [data-act="delete"]');
+    assert.equal((await noteRects(page)).length, 2);
+    await page.click('#nStatus .n-undo');
+    assert.equal((await noteRects(page)).length, 3);
+    const undone = await rec('m1');
+    assert.deepEqual([undone.font, undone.color, undone.pinned], ['kalam', 'pink', true]);
+
+    // Writing: one text area, title emphasis after Enter, bullets, strike, the paper never overflows
+    await page.click('#newNote');
+    await page.keyboard.type('Sample title');
+    assert.equal(await page.locator('.note:has(.n-text:focus) .n-view .ti').count(), 0, 'no title emphasis before Enter');
+    await page.keyboard.press('Enter');
+    assert.equal(await page.locator('.note:has(.n-text:focus) .n-view .ti').count(), 1, 'the first line reads as a title after Enter');
+    await page.keyboard.type('- one');
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('two');
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Enter'); // an empty bullet ends the list
+    const fresh = page.locator('.note:has(.n-text:focus)');
+    assert.equal(await fresh.locator('.n-text').inputValue(), 'Sample title\n• one\n• two\n');
+    assert.equal(await fresh.locator('.n-view .mk').count(), 2);
+    assert.equal(await fresh.locator('.n-text').evaluate((t) => t.scrollHeight <= t.clientHeight + 1), true, 'no scrollbar needed');
+    const mk = await fresh.locator('.n-view .mk').first().boundingBox();
+    await page.mouse.click(mk.x + 3, mk.y + mk.height / 2); // a click on the bullet strikes it like a pencil
+    assert.equal((await fresh.locator('.n-text').inputValue()).split('\n')[1], '✓ one');
+    assert.equal(await fresh.locator('.n-view .sx').count(), 1);
+    assert.equal(await fresh.locator('.n-view .sx').evaluate((e) => getComputedStyle(e).textDecorationLine), 'line-through');
+    const id = await fresh.getAttribute('data-id');
+    await page.waitForTimeout(600);
+    assert.ok((await rec(id)).text.includes('✓ one'), 'the struck bullet is saved');
+    await page.reload();
+    await page.waitForSelector('.note');
+    assert.equal(await note(id).locator('.n-view .sx').count(), 1, 'the struck bullet survives a reload');
+    const mk2 = await note(id).locator('.n-view .mk').first().boundingBox();
+    await page.mouse.click(mk2.x + 3, mk2.y + mk2.height / 2); // clicking again clears it
+    assert.equal(await note(id).locator('.n-view .sx').count(), 0);
+    // a long text steps the font down, and input that cannot fit is refused
+    const ta = note(id).locator('.n-text');
+    await ta.fill('Sample words '.repeat(14));
+    const fit1 = await note(id).evaluate((el) => ({ fits: el.querySelector('.n-text').scrollHeight <= el.querySelector('.n-text').clientHeight + 1, fs: parseFloat(el.style.getPropertyValue('--fs')) }));
+    assert.equal(fit1.fits, true, 'the text stays on the paper');
+    assert.ok(fit1.fs < 16, 'the font stepped down');
+    await ta.fill('x'.repeat(3000));
+    const fit2 = await note(id).evaluate((el) => ({ fits: el.querySelector('.n-text').scrollHeight <= el.querySelector('.n-text').clientHeight + 1, len: el.querySelector('.n-text').value.length }));
+    assert.equal(fit2.fits, true);
+    assert.ok(fit2.len < 3000, 'input that cannot fit is limited');
+    await ta.fill('Sample short');
+
+    // Drag by the head: it grows and deepens its shadow while held, then settles at a new tilt close to the old one
+    await note('m3').locator('.n-head').scrollIntoViewIfNeeded();
+    const was = (await rec('m3')).angle;
+    const hb = await note('m3').locator('.n-head').boundingBox();
+    await page.mouse.move(hb.x + hb.width / 2, hb.y + 12);
+    await page.mouse.down();
+    await page.mouse.move(hb.x + 200, hb.y + 100, { steps: 6 });
+    await page.waitForTimeout(300); // the lift transition ends
+    const held = await note('m3').evaluate((el) => getComputedStyle(el).transform);
+    assert.ok(/matrix\(/.test(held));
+    const sc = await note('m3').evaluate((el) => { const m = new DOMMatrix(getComputedStyle(el).transform); return Math.hypot(m.a, m.b); });
+    assert.ok(Math.abs(sc - 1.03) < 0.005, `scale(1.03) while held (${sc})`);
+    await page.mouse.up();
+    const now = (await rec('m3')).angle;
+    assert.ok(now >= -4 && now <= 4 && Math.abs(now - Math.min(Math.max(was, -4), 4)) <= 1.5 + 1e-6, `settled near ${was}: ${now}`);
+
+    // Gather: a messy pile; positions and angles persist; a click pulls a note out of it
+    await page.click('#gatherNotes');
+    await page.waitForTimeout(700);
+    const pile = (await noteRects(page)).sort((x, y) => y.z - x.z);
+    for (const r of pile) {
+      assert.ok(Math.abs(r.right - (width - 24)) <= 18.5 && Math.abs(r.bottom - (height - 44)) <= 18.5, 'near the corner');
+      assert.ok(Math.abs(r.angle) <= 8);
+    }
+    s = await stored();
+    for (const r of pile) { const o = s.notes.find((n) => n.id === r.id); assert.equal(o.angle, r.angle, 'the pile angle is saved'); }
+    // the lowest note is pulled out by dragging its visible edge
+    const low = pile[pile.length - 1];
+    const spot = await page.evaluate((id) => {
+      const el = document.querySelector(`.note[data-id="${id}"]`), r = el.getBoundingClientRect();
+      for (let y = r.top + 2; y < r.bottom; y += 3) for (let x = r.left + 2; x < r.right; x += 3) { const e = document.elementFromPoint(x, y); if (e && e.closest('.note') === el) return { x, y }; }
+      return null;
+    }, low.id);
+    assert.ok(spot, 'part of the lowest note shows');
+    await page.mouse.move(spot.x, spot.y);
+    await page.mouse.down();
+    await page.mouse.move(spot.x - 250, spot.y - 220, { steps: 6 });
+    await page.mouse.up();
+    const after = (await noteRects(page)).sort((x, y) => y.z - x.z);
+    assert.equal(after.find((r) => r.id !== 'm1').id, low.id, 'the pulled note is at the front (a pinned note stays above)');
+    assert.ok(Math.abs(after.find((r) => r.id === low.id).right - (width - 24)) > 100, 'it left the pile');
+    assert.equal(await note(low.id).evaluate((el) => el.classList.contains('piled')), false);
+    if (reduced) assert.equal(await note(pile[0].id).evaluate((el) => getComputedStyle(el).transitionDuration), '0s', 'no motion with prefers-reduced-motion');
+
+    assert.ok(requests.every((u) => !u.includes('Sample')), 'no request carries note text');
+    assert.ok(logs.every((m) => !m.includes('Sample')), 'no console line carries note text');
+    console.log(`ok   ${tag}`);
+  } catch (err) {
+    failed++;
+    console.error(`FAIL ${tag}: ${err.message}`);
+  } finally {
+    await ctx.close();
+  }
+}
+
 // Two tabs on one store (every server start opens a new tab): a tab never writes a stale snapshot over newer notes.
 async function notesTwoPages() {
   const ctx = await browser.newContext({ viewport: { width: 1633, height: 930 } });
@@ -460,9 +709,11 @@ async function notesTwoPages() {
     assert.deepEqual(await stored(a), ['Sample note 0 edited', 'Sample note B'], 'gather in A keeps the note made in B');
     assert.deepEqual(await texts(a), ['Sample note 0 edited', 'Sample note B'], 'A shows the note made in B');
     // a delete in one page does not come back from the other
-    const del = a.locator('.note', { has: a.locator('.n-del[aria-label="Delete note: Sample note B"]') }).locator('.n-del');
-    assert.equal(await del.count(), 1, 'A has a Delete button for the note made in B');
-    await del.click();
+    const bn = a.locator('.note[aria-label="Note: Sample note B"]');
+    assert.equal(await bn.count(), 1, 'A shows the note made in B');
+    await bn.locator('.n-menu-btn').focus(); // the gathered pile hides it under another note: the keyboard path reaches it
+    await a.keyboard.press('Enter');
+    await a.click('.n-menu [data-act="delete"]');
     await a.waitForTimeout(200);
     await b.waitForTimeout(200);
     assert.deepEqual(await texts(b), ['Sample note 0 edited'], 'the delete in A reaches B');
@@ -497,6 +748,9 @@ try {
   await notesRun(1633, 930, 'light', 'tr');
   await notesLimit(1920, 1080);
   await notesLimit(1633, 930);
+  await notesRealism('light');
+  await notesRealism('dark');
+  await notesRealism('light', true);
   await notesDemo();
   await notesTwoPages();
 } finally {
