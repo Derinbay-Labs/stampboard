@@ -14,6 +14,11 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 @font-face { font-family: 'JetBrains Mono'; src: url(/fonts/jbmono-latin-ext.woff2) format('woff2'); font-weight: 400 700; font-display: swap;
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+/* Note handwriting fonts (OFL, fonts/OFL-*.txt): Latin plus Turkish, one file each; Archivo above is the plain sans. */
+@font-face { font-family: Caveat; src: url(/fonts/caveat-latin.woff2) format('woff2'); font-weight: 400 700; font-display: swap; unicode-range: U+0000-00FF, U+0131, U+0130, U+011E-011F, U+015E-015F, U+0152-0153, U+2013-2014, U+2018-201E, U+2022, U+2026, U+20AC, U+2122; }
+@font-face { font-family: Kalam; src: url(/fonts/kalam-latin.woff2) format('woff2'); font-weight: 400; font-display: swap; unicode-range: U+0000-00FF, U+0131, U+0130, U+011E-011F, U+015E-015F, U+0152-0153, U+2013-2014, U+2018-201E, U+2022, U+2026, U+20AC, U+2122; }
+@font-face { font-family: 'Patrick Hand'; src: url(/fonts/patrickhand-latin.woff2) format('woff2'); font-weight: 400; font-display: swap; unicode-range: U+0000-00FF, U+0131, U+0130, U+011E-011F, U+015E-015F, U+0152-0153, U+2013-2014, U+2018-201E, U+2022, U+2026, U+20AC, U+2122; }
+@font-face { font-family: 'Architects Daughter'; src: url(/fonts/architectsdaughter-latin.woff2) format('woff2'); font-weight: 400; font-display: swap; unicode-range: U+0000-00FF, U+0131, U+0130, U+011E-011F, U+015E-015F, U+0152-0153, U+2013-2014, U+2018-201E, U+2022, U+2026, U+20AC, U+2122; }
 
 /* Paper (ledger) and departure board. Colour only marks state; the seal red is the one reserved colour. */
 :root {
@@ -24,7 +29,7 @@
   --pass: #4c6a2a; --run: #2f4a7a; --focus: #2f4a7a;
   --board: #141310; --board-2: #1f1d19; --board-rule: #34312b; --board-ink: #f4f1ea; --board-muted: #a8a196;
   --lamp: #ffcf33; --plate: #f4f1ea; --plate-ink: #141310;
-  --note: #f3e4a6; --note-ink: var(--ink); --note-muted: #5c4c1c; --note-edge: #8a7430; --note-line: rgba(138, 116, 48, .22);
+  --nc-yellow: #f6e58d; --nc-pink: #f7c6d3; --nc-mint: #c6ebcf; --nc-blue: #bfe0f4; --nc-orange: #f9cf98; --note-ink: var(--ink); --note-muted: #5c4c1c; --note-edge: #8a7430; --note-line: rgba(138, 116, 48, .22);
   --shadow: 0 1px 0 var(--rule), 0 6px 18px -10px rgba(34, 32, 28, .35);
 }
 @media (prefers-color-scheme: dark) {
@@ -36,7 +41,7 @@
     --pass: #9bb86a; --run: #93a9d6; --focus: #93a9d6;
     --board: #0d0c0b; --board-2: #181714; --board-rule: #2e2b26; --board-ink: #ece6d8; --board-muted: #a49d8f;
     --plate: #ece6d8; --shadow: 0 1px 0 var(--rule), 0 6px 18px -10px rgba(0, 0, 0, .7);
-    --note: #393322; --note-muted: #cdbf99; --note-edge: #8c7b45; --note-line: rgba(140, 123, 69, .28);
+    --note-mix: 24%; --note-muted: #e2d8bd; --note-edge: #8c7b45; --note-line: rgba(140, 123, 69, .28);
   }
 }
 :root[data-theme="dark"] {
@@ -47,7 +52,7 @@
   --pass: #9bb86a; --run: #93a9d6; --focus: #93a9d6;
   --board: #0d0c0b; --board-2: #181714; --board-rule: #2e2b26; --board-ink: #ece6d8; --board-muted: #a49d8f;
   --plate: #ece6d8; --shadow: 0 1px 0 var(--rule), 0 6px 18px -10px rgba(0, 0, 0, .7);
-  --note: #393322; --note-muted: #cdbf99; --note-edge: #8c7b45; --note-line: rgba(140, 123, 69, .28);
+  --note-mix: 24%; --note-muted: #e2d8bd; --note-edge: #8c7b45; --note-line: rgba(140, 123, 69, .28);
 }
 
 * { box-sizing: border-box; }
@@ -323,7 +328,7 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
 @media (max-width: 1280px), (max-height: 760px) {
   .rz .rz-enl { display: none; }
 }
-/* Sticky notes (docs/design/sticky-notes.md, Option 1). No motion. */
+/* Sticky notes (docs/design/sticky-notes.md, Option 1 and the realism pass of #81). Motion only when the user has not asked to reduce it. */
 .foot .nctl { order: 1; align-self: center; margin-left: auto; position: relative; z-index: 60; display: inline-flex; align-items: center; gap: 18px; white-space: nowrap; min-width: 0; }
 .foot .fbtn { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 17px; padding: 0; border: 0; background: var(--paper); color: var(--ink); font: inherit; font-weight: 600; line-height: 17px; cursor: pointer; }
 .foot .fbtn::after { content: ''; position: absolute; inset: -15px -6px -12px; }
@@ -338,25 +343,85 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
 .notes { position: fixed; inset: 0; z-index: 50; pointer-events: none; }
 .notes[hidden] { display: none; }
 body.placing, body.placing * { cursor: crosshair !important; }
-.note { position: absolute; width: 240px; height: 216px; display: grid; grid-template-rows: 36px minmax(0, 1fr); background: var(--note); color: var(--note-ink); border: 1px solid var(--note-edge); border-radius: 3px; box-shadow: 0 1px 0 var(--note-edge), 0 8px 16px -10px rgba(34, 32, 28, .45); pointer-events: auto; }
-.note.lifted { box-shadow: 0 16px 26px -8px rgba(0, 0, 0, .5); transform: translateY(-2px); }
-.note.reveal { opacity: .15; pointer-events: none; }
-.n-head { display: flex; align-items: center; gap: 2px; padding: 0 2px; border-bottom: 1px solid var(--note-line); cursor: grab; user-select: none; touch-action: none; }
-.n-btn { position: relative; flex: none; display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 3px; background: transparent; color: var(--note-ink); cursor: pointer; }
-.n-btn::after { content: ''; position: absolute; inset: -6px; }
-.n-btn:hover { background: var(--note-line); }
+.note { position: absolute; width: 240px; height: 216px; display: grid; grid-template-rows: 28px minmax(0, 1fr); color: var(--note-ink); pointer-events: none; transform: rotate(var(--a, 0deg)); transform-origin: 50% 50%;
+  --nc: var(--nc-yellow); --note: color-mix(in srgb, var(--nc) var(--note-mix, 100%), var(--note-base, #1f1d19));
+  --fk: 1; --fs: 16px; font: 400 calc(var(--fs) * var(--fk))/1.3 Archivo, system-ui, sans-serif; text-rendering: geometricPrecision;
+  box-shadow: 0 11px 9px -9px rgba(34, 32, 28, .5), 0 3px 3px -2px rgba(34, 32, 28, .22); }
+.note[data-c="pink"] { --nc: var(--nc-pink); }
+.note[data-c="mint"] { --nc: var(--nc-mint); }
+.note[data-c="blue"] { --nc: var(--nc-blue); }
+.note[data-c="orange"] { --nc: var(--nc-orange); }
+.note[data-f="caveat"] { --fk: 1.32; font-family: Caveat, 'Segoe Print', cursive; }
+.note[data-f="kalam"] { --fk: 1; font-family: Kalam, 'Segoe Print', cursive; }
+.note[data-f="patrick"] { --fk: 1.12; font-family: 'Patrick Hand', 'Segoe Print', cursive; }
+.note[data-f="architects"] { --fk: .94; font-family: 'Architects Daughter', 'Segoe Print', cursive; }
+.note[data-f="sans"] { --fk: 1; font-family: Archivo, system-ui, sans-serif; }
+/* the lifted bottom corners: two soft shadows tipped away from the surface; the top 20% stays flat and unshadowed */
+.note::before, .note::after { content: ''; position: absolute; z-index: -1; bottom: 7px; width: 52%; height: 26%; box-shadow: 0 14px 12px rgba(20, 18, 14, .42); pointer-events: none; }
+.note::before { left: 5px; transform: rotate(-3.2deg); }
+.note::after { right: 5px; transform: rotate(3.2deg); }
+.note.lifted { transform: rotate(var(--a, 0deg)) scale(1.03); box-shadow: 0 22px 20px -10px rgba(0, 0, 0, .5), 0 6px 8px -3px rgba(0, 0, 0, .3); }
+.note.lifted::before, .note.lifted::after { box-shadow: 0 20px 18px rgba(20, 18, 14, .5); }
+.note.reveal { opacity: .15; }
+.note.reveal, .note.reveal > * { pointer-events: none !important; }
+.note.pinned .n-paper { clip-path: polygon(0 0, 100% 0, 100% calc(100% - 22px), calc(100% - 22px) 100%, 0 100%); }
+.note > * { pointer-events: auto; }
+.note > .n-paper, .note > .n-ear { pointer-events: none; }
+.note.piled .n-text { pointer-events: none; }
+.note.piled { cursor: grab; }
+/* paper: flat colour, a darker bottom (lifted), and a very faint feTurbulence grain */
+.n-paper { position: absolute; inset: 0; z-index: 0; border-radius: 2px; background: linear-gradient(180deg, transparent 0 20%, rgba(60, 46, 10, .05) 70%, rgba(60, 46, 10, .13)), var(--note); }
+.n-paper::after { content: ''; position: absolute; inset: 0; opacity: .1; mix-blend-mode: multiply; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2  0 0 0 0 .16  0 0 0 0 .08  0 0 0 1.4 -.35'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E"); }
+.n-ear { position: absolute; z-index: 1; right: 0; bottom: 0; width: 22px; height: 22px; background: color-mix(in srgb, var(--note) 62%, #fff); filter: drop-shadow(-1px -1px 1.5px rgba(0, 0, 0, .3)); clip-path: polygon(0 0, 100% 0, 0 100%); }
+.n-ear[hidden] { display: none; }
+.n-head { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; padding: 0 2px; cursor: grab; user-select: none; touch-action: none; }
+.n-btn { position: relative; flex: none; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 3px; background: transparent; color: var(--note-muted); cursor: pointer; }
+.n-btn::after { content: ''; position: absolute; inset: -4px; }
+.n-btn:hover, .n-btn:focus-visible { background: var(--note-line); color: var(--note-ink); }
 .n-move[aria-pressed="true"] { background: var(--note-ink); color: var(--note); }
-.n-title { flex: 1; min-width: 0; font-size: 13px; font-weight: 650; font-stretch: 85%; line-height: 36px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.n-title.empty { color: var(--note-muted); font-weight: 500; }
-.n-unsaved { flex: none; display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; }
+.n-unsaved { flex: none; display: inline-flex; align-items: center; gap: 3px; margin-right: auto; padding-left: 4px; font: 600 11px/1 Archivo, system-ui, sans-serif; }
 .n-unsaved[hidden] { display: none; }
-.n-tip { display: none; position: absolute; top: 40px; left: 4px; z-index: 2; max-width: 220px; padding: 3px 8px; border-radius: 3px; background: var(--ink); color: var(--paper); font-size: 12px; line-height: 1.3; pointer-events: none; }
+.n-tip { display: none; position: absolute; top: 32px; left: 4px; z-index: 2; max-width: 220px; padding: 3px 8px; border-radius: 3px; background: var(--ink); color: var(--paper); font: 400 12px/1.3 Archivo, system-ui, sans-serif; pointer-events: none; }
 .n-move:focus-visible + .n-tip { display: block; }
-.n-text { display: block; width: 100%; height: 100%; min-height: 0; resize: none; margin: 0; padding: 0 10px; border: 0; border-radius: 0 0 3px 3px; color: inherit; font: 400 14px/22px Archivo, system-ui, sans-serif; background-color: transparent; background-image: linear-gradient(transparent 21px, var(--note-line) 21px); background-size: 100% 22px; background-attachment: local; overflow-y: auto; }
-.n-text::placeholder { color: var(--note-muted); opacity: 1; }
+/* one free text area: the textarea holds the text and caret with transparent glyphs, .n-view draws the same text styled */
+.n-body { position: relative; z-index: 1; min-height: 0; }
+.n-view, .n-text { position: absolute; inset: 0; margin: 0; padding: 0 16px 16px; border: 0; border-radius: 0; font: inherit; letter-spacing: 0; white-space: pre-wrap; overflow-wrap: break-word; word-break: normal; overflow-y: auto; scrollbar-width: none; }
+.n-view::-webkit-scrollbar, .n-text::-webkit-scrollbar { display: none; }
+.n-view { overflow: hidden; pointer-events: none; color: var(--note-ink); }
+.n-text { display: block; width: 100%; height: 100%; resize: none; background: transparent; color: transparent; -webkit-text-fill-color: transparent; caret-color: var(--note-ink); }
+.n-text::placeholder { -webkit-text-fill-color: var(--note-muted); color: var(--note-muted); opacity: 1; }
+.n-text::selection { background: rgba(47, 74, 122, .3); }
 .n-text:focus-visible { outline-offset: -3px; }
-.n-count { position: absolute; right: 8px; bottom: 4px; padding: 0 3px; border-radius: 2px; background: var(--note); color: var(--note-muted); font: 500 11px/16px 'JetBrains Mono', ui-monospace, monospace; pointer-events: none; }
+.n-view .ti { -webkit-text-stroke: .5px currentColor; }
+.n-view .mk { position: relative; color: transparent; }
+.n-view .mk::before { content: '\2022'; position: absolute; left: 0; color: var(--note-ink); }
+.n-view .sx { text-decoration: line-through; text-decoration-thickness: 2px; text-decoration-color: var(--note-ink); opacity: .62; }
+.n-count { position: absolute; z-index: 2; right: 8px; bottom: 4px; padding: 0 3px; border-radius: 2px; background: var(--note); color: var(--note-muted); font: 500 11px/16px 'JetBrains Mono', ui-monospace, monospace; pointer-events: none; }
 .n-count[hidden] { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .note { transition: transform .14s ease, box-shadow .14s ease; }
+  .note.gathering { transition: left .5s cubic-bezier(.2, .8, .25, 1), top .5s cubic-bezier(.2, .8, .25, 1), transform .5s cubic-bezier(.2, .8, .25, 1); }
+}
+/* the note menu (right-click, Shift+F10 or the context-menu key) */
+.n-menu { position: fixed; z-index: 90; width: 232px; padding: 8px; border: 1px solid var(--rule); border-radius: 6px; background: var(--sheet); color: var(--ink); box-shadow: 0 12px 28px -8px rgba(0, 0, 0, .45); font: 400 13px/1.3 Archivo, system-ui, sans-serif; }
+.n-menu[hidden] { display: none; }
+.n-menu button { font: inherit; color: inherit; cursor: pointer; }
+.nm-sw { display: flex; gap: 8px; padding: 2px 2px 8px; border-bottom: 1px solid var(--rule-soft); margin-bottom: 4px; }
+.nm-sw button { position: relative; width: 28px; height: 28px; padding: 0; border-radius: 50%; border: 1px solid rgba(0, 0, 0, .35); background: var(--sw); }
+.nm-sw button[aria-checked="true"] { box-shadow: 0 0 0 2px var(--sheet), 0 0 0 4px var(--ink); }
+.nm-sw button:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.nm-it { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 30px; padding: 3px 8px; border: 0; border-radius: 4px; background: transparent; text-align: left; }
+.nm-it:hover, .nm-it:focus-visible { background: var(--rule-soft); }
+.nm-it[aria-checked="true"]::after { content: '\2713'; font-size: 12px; }
+.nm-it[aria-disabled="true"] { color: var(--muted); cursor: default; }
+.nm-fonts { border-bottom: 1px solid var(--rule-soft); margin-bottom: 4px; padding-bottom: 4px; }
+.nm-row { display: flex; gap: 4px; align-items: center; }
+.nm-row .nm-it { justify-content: center; }
+.nm-del { color: var(--seal); }
+.nm-f-caveat { font: 400 20px/1 Caveat, cursive; }
+.nm-f-kalam { font: 400 15px/1 Kalam, cursive; }
+.nm-f-patrick { font: 400 16px/1 'Patrick Hand', cursive; }
+.nm-f-architects { font: 400 14px/1 'Architects Daughter', cursive; }
 </style>
 </head>
 <body>
@@ -526,6 +591,12 @@ body.placing, body.placing * { cursor: crosshair !important; }
       notesGathered: (n) => `${num.format(n)} not toplandı.`, noNotes: 'Henüz not yok',
       notesLimit: 'En fazla 50 not olur. Yenisi için birini sil.', notSaved: 'Kaydedilmedi',
       saveFailed: 'Notlar bu makineye kaydedilemiyor. Sekmeyi kapatmadan önce metni kopyala.',
+      noteMenu: (t) => `Not seçenekleri: ${t}`, noteMenuLabel: 'Not seçenekleri',
+      mColor: 'Renk', mFont: 'Yazı tipi', mSize: 'Boyut', mTilt: 'Eğim',
+      colYellow: 'Klasik sarı', colPink: 'Pastel pembe', colMint: 'Nane yeşili', colBlue: 'Açık mavi', colOrange: 'Turuncu',
+      fontPlain: 'Sade (Archivo)', sizeUp: 'Daha büyük yazı', sizeDown: 'Daha küçük yazı',
+      tiltRandom: 'Rastgele eğim', tiltReset: 'Açıyı sıfırla (0°)', pinFront: 'Öne sabitle', deleteNoteMenu: 'Notu sil',
+      noteFull: 'Not dolu: daha fazla yazı sığmıyor.',
     },
     en: {
       appName: 'Stampboard',
@@ -622,6 +693,12 @@ body.placing, body.placing * { cursor: crosshair !important; }
       notesGathered: (n) => `${num.format(n)} ${n === 1 ? 'note' : 'notes'} gathered.`, noNotes: 'No notes yet',
       notesLimit: '50 notes is the limit. Delete one to add another.', notSaved: 'Not saved',
       saveFailed: "Notes can't be saved on this machine. Copy the text before closing the tab.",
+      noteMenu: (t) => `Note options: ${t}`, noteMenuLabel: 'Note options',
+      mColor: 'Colour', mFont: 'Font', mSize: 'Size', mTilt: 'Tilt',
+      colYellow: 'Classic Yellow', colPink: 'Pastel Pink', colMint: 'Mint Green', colBlue: 'Light Blue', colOrange: 'Orange',
+      fontPlain: 'Plain (Archivo)', sizeUp: 'Larger text', sizeDown: 'Smaller text',
+      tiltRandom: 'Random tilt', tiltReset: 'Reset angle (0°)', pinFront: 'Pin to front', deleteNoteMenu: 'Delete note',
+      noteFull: 'The note is full: no more text fits.',
     },
   };
   // ?lang=en or ?lang=tr, then the EN/TR switch (stored in stampboard-lang), then the browser
@@ -1081,14 +1158,57 @@ body.placing, body.placing * { cursor: crosshair !important; }
     for (const line of String(text).split('\n')) if (line.trim()) return line.trim();
     return '';
   };
+  // ---- realism pass (#81): colour, font, size, tilt, pin, messy pile, bullets, menu position ----
+  const COLORS = ['yellow', 'pink', 'mint', 'blue', 'orange'];
+  const FONTS = ['caveat', 'kalam', 'patrick', 'architects', 'sans'];
+  const SIZES = [10, 12, 14, 16, 18, 20, 24, 28, 32]; // nominal px; each font scales it (see .note[data-f])
+  const DEFAULTS = { angle: 0, font: 'sans', size: 14, color: 'yellow', pinned: false }; // a stored v1 note, or an unreadable field
+  const FRESH = { font: 'caveat', size: 16, color: 'yellow', pinned: false }; // a note made now
+  const TILT = { max: 4, settle: 1.5, pile: 8, offMin: 8, offMax: 18, stored: 8, minSize: 8 };
+  const round1 = (v) => Math.round(v * 10) / 10;
+  const lerp = (lo, hi, r) => lo + (hi - lo) * r;
+  const randomTilt = (r) => round1(lerp(-TILT.max, TILT.max, r)); // r in [0,1): a new note
+  // a note dropped after a drag: a new random angle in -4..4 that stays within 1.5 degrees of where it was
+  const settleAngle = (cur, r) => {
+    const c = Math.min(Math.max(Number.isFinite(cur) ? cur : 0, -TILT.max), TILT.max);
+    return round1(lerp(Math.max(-TILT.max, c - TILT.settle), Math.min(TILT.max, c + TILT.settle), r));
+  };
+  // A+ / A-: the next size in SIZES (dir +1 or -1); null when already at the end
+  const stepSize = (size, dir) => {
+    let i = SIZES.indexOf(size);
+    if (i < 0) i = SIZES.reduce((best, v, k) => (Math.abs(v - size) < Math.abs(SIZES[best] - size) ? k : best), 0);
+    const j = i + dir;
+    return j < 0 || j >= SIZES.length ? null : SIZES[j];
+  };
+  // The messy pile: every note near the bottom-right pile spot, each offset 8..18px in X and in Y (random signs) and
+  // tilted -8..8 degrees. rnd() is called 5 times per note, so a test can feed fixed numbers.
+  function messyPile(count, vw, vh, rnd) {
+    const base = pileSlot(0, vw, vh), out = [];
+    for (let i = 0; i < count; i++) {
+      const dx = (rnd() < 0.5 ? -1 : 1) * lerp(TILT.offMin, TILT.offMax, rnd());
+      const dy = (rnd() < 0.5 ? -1 : 1) * lerp(TILT.offMin, TILT.offMax, rnd());
+      const p = clampPos(base.left + dx, base.top + dy, vw, vh);
+      out.push({ left: Math.round(p.left), top: Math.round(p.top), angle: round1(lerp(-TILT.pile, TILT.pile, rnd())) });
+    }
+    return out;
+  }
+  // the menu opens at the pointer and is kept 8px inside the screen edges
+  const menuPos = (x, y, mw, mh, vw, vh) => ({ left: clampBetween(x, NOTE.margin, vw - mw - NOTE.margin), top: clampBetween(y, NOTE.margin, vh - mh - NOTE.margin) });
+  // Quick list. A bullet line starts with "- ", "* " or the bullet itself; a struck (pencil-crossed) bullet starts with
+  // the tick mark. The mark lives in the text, so it follows the line through edits, undo, copy and other tabs.
+  const BULLET = '\u2022', STRUCK = '\u2713';
+  const lineKind = (line) => (line.startsWith(STRUCK + ' ') ? 'done' : /^[-*\u2022] /.test(line) ? 'open' : null);
+  const toggleStrike = (line) => { const k = lineKind(line); return k === 'done' ? BULLET + line.slice(1) : k === 'open' ? STRUCK + line.slice(1) : line; };
   const okId = (v) => typeof v === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(v);
   const okAnchor = (a, edges) => !!a && typeof a === 'object' && edges.includes(a.e) && Number.isFinite(a.o);
-  // Stored notes: readable records become notes, an unreadable record is kept unchanged in `rest`.
+  // Stored notes. v1 is {id,text,x,y,z}; v2 adds angle, font, size, color and pinned (a missing or invalid one takes its
+  // default). The title was always the first line of the text, so v1 text loads unchanged. A record this page cannot
+  // read is kept unchanged in `rest`; the next save writes v2.
   function sanitizeNotes(raw) {
     if (raw == null || raw === '') return { notes: [], rest: [], bad: false };
     let data;
     try { data = JSON.parse(raw); } catch { return { notes: [], rest: [], bad: true }; }
-    if (!data || data.v !== 1 || !Array.isArray(data.notes)) return { notes: [], rest: [], bad: true };
+    if (!data || (data.v !== 1 && data.v !== 2) || !Array.isArray(data.notes)) return { notes: [], rest: [], bad: true };
     const notes = [], rest = [], seen = new Set();
     data.notes.forEach((r, i) => {
       if (!r || typeof r !== 'object' || !okId(r.id) || seen.has(r.id) || typeof r.text !== 'string' || notes.length >= NOTE.max) { rest.push(r); return; }
@@ -1099,6 +1219,11 @@ body.placing, body.placing * { cursor: crosshair !important; }
         x: okAnchor(r.x, ['l', 'r']) ? { e: r.x.e, o: r.x.o } : { e: 'r', o: NOTE.pileRight },
         y: okAnchor(r.y, ['t', 'b']) ? { e: r.y.e, o: r.y.o } : { e: 'b', o: NOTE.pileBottom },
         z: Number.isFinite(r.z) ? r.z : i,
+        angle: Number.isFinite(r.angle) ? round1(Math.min(Math.max(r.angle, -TILT.stored), TILT.stored)) : DEFAULTS.angle,
+        font: FONTS.includes(r.font) ? r.font : DEFAULTS.font,
+        size: SIZES.includes(r.size) ? r.size : DEFAULTS.size,
+        color: COLORS.includes(r.color) ? r.color : DEFAULTS.color,
+        pinned: r.pinned === true,
       });
     });
     return { notes, rest, bad: false };
@@ -1492,9 +1617,10 @@ body.placing, body.placing * { cursor: crosshair !important; }
   const NICON = {
     move: nIcon('<path d="M8 2.5v11M2.5 8h11"/><path d="M6 4.5 8 2.5l2 2M6 11.5l2 2 2-2M4.5 6 2.5 8l2 2M11.5 6l2 2-2 2"/>'),
     del: nIcon('<path d="M4 4l8 8M12 4l-8 8"/>'),
+    dots: nIcon('<circle cx="3.5" cy="8" r=".6"/><circle cx="8" cy="8" r=".6"/><circle cx="12.5" cy="8" r=".6"/>'),
     warn: nIcon('<path d="M8 2.5 14 13H2z"/><path d="M8 6.8v3M8 11.8v.1"/>'),
   };
-  let notes = []; // { id, text, x, y, z, fresh, unsaved } in creation order; z is the stacking order
+  let notes = []; // { id, text, x, y, z, angle, font, size, color, pinned, fresh, unsaved } in creation order; z is the stacking order
   let rest = []; // stored records this page could not read; written back unchanged
   let notesReady = false, notesStore = null, rawBad = null, rawKept = false, saveFailed = false;
   let placing = null, drag = null, suppressClick = false;
@@ -1510,6 +1636,7 @@ body.placing, body.placing * { cursor: crosshair !important; }
   // snapshot over newer stored notes: before each write, and on each storage event, it merges by id.
   // known = ids this tab last saw in storage; gone = ids this tab deleted (so a stale stored copy is not re-adopted).
   const known = new Set(), gone = new Set();
+  const look = (o) => JSON.stringify([o.x, o.y, o.z, o.angle, o.font, o.size, o.color, o.pinned]); // everything but the text
   function mergeStored(live) {
     const s = sanitizeNotes(notesStore.get(NOTES_KEY));
     if (s.bad) return;
@@ -1528,7 +1655,7 @@ body.placing, body.placing * { cursor: crosshair !important; }
         dropNote(n); changed = true;
       } else if (live && !dirty && !(drag && drag.n === n)) {
         if (!typing && n.text !== r.text) { n.text = r.text; if (el) el.querySelector('.n-text').value = r.text; changed = true; }
-        if (JSON.stringify([n.x, n.y, n.z]) !== JSON.stringify([r.x, r.y, r.z])) { n.x = r.x; n.y = r.y; n.z = r.z; changed = true; }
+        if (look(n) !== look(r)) { n.x = r.x; n.y = r.y; n.z = r.z; n.angle = r.angle; n.font = r.font; n.size = r.size; n.color = r.color; n.pinned = r.pinned; changed = true; }
       }
     }
     for (const r of s.notes) {
@@ -1547,14 +1674,46 @@ body.placing, body.placing * { cursor: crosshair !important; }
     if (!DEMO_PAGE) mergeStored(false);
     let ok = true;
     if (rawBad != null && !rawKept) { ok = notesStore.set(`${NOTES_KEY}-unreadable`, rawBad); rawKept = ok; } // never overwrite what we could not read
-    const recs = notes.filter((n) => !n.fresh || n.text).map(({ id, text, x, y, z }) => ({ id, text, x, y, z }));
-    ok = ok && notesStore.set(NOTES_KEY, JSON.stringify({ v: 1, notes: recs.concat(rest) }));
+    const recs = notes.filter((n) => !n.fresh || n.text).map(({ id, text, x, y, z, angle, font, size, color, pinned }) => ({ id, text, x, y, z, angle, font, size, color, pinned }));
+    ok = ok && notesStore.set(NOTES_KEY, JSON.stringify({ v: 2, notes: recs.concat(rest) }));
     if (ok) { known.clear(); for (const r of recs) known.add(r.id); }
     saveFailed = !ok;
     for (const n of notes) { n.unsaved = !ok; paintNote(n); }
     drawStatus();
   }
   const persistSoon = () => { clearTimeout(saveTimer); saveTimer = setTimeout(persist, 400); };
+
+  // The text is drawn twice: the textarea holds the real text and caret (its glyphs are transparent), .n-view draws the
+  // same characters styled: the title line, bullets and struck bullets. Neither is ever wider than the other, so they line up.
+  function drawView(n) {
+    const view = noteEls.get(n.id).querySelector('.n-view');
+    const lines = n.text.split('\n');
+    const titled = lines.length > 1 && lines[0].trim() !== '' && !lineKind(lines[0]);
+    const frag = document.createDocumentFragment();
+    lines.forEach((ln, i) => {
+      const kind = lineKind(ln);
+      if (kind) {
+        const mk = document.createElement('span'); mk.className = 'mk'; mk.textContent = ln[0];
+        const tx = document.createElement('span'); if (kind === 'done') tx.className = 'sx'; tx.textContent = ln.slice(2);
+        frag.append(mk, ' ', tx);
+      } else if (i === 0 && titled) {
+        const t = document.createElement('span'); t.className = 'ti'; t.textContent = ln; frag.append(t);
+      } else frag.append(ln);
+      frag.append('\n');
+    });
+    view.replaceChildren(frag);
+  }
+  // No scrollbar: the font steps down until the text fits the paper. Returns true when it still does not fit at the smallest size.
+  function fitNote(n) {
+    const el = noteEls.get(n.id), ta = el.querySelector('.n-text');
+    let s = n.size;
+    el.style.setProperty('--fs', `${s}px`);
+    if (!ta.clientHeight) { n.fit = s; return false; }
+    while (s > TILT.minSize && ta.scrollHeight > ta.clientHeight + 1) { s -= 1; el.style.setProperty('--fs', `${s}px`); }
+    n.fit = s;
+    return ta.scrollHeight > ta.clientHeight + 1;
+  }
+  const effZ = (n) => (n.pinned ? 100000 : 0) + Math.round(n.z); // a pinned note stays above the others
 
   function paintNote(n) {
     const el = noteEls.get(n.id);
@@ -1563,29 +1722,35 @@ body.placing, body.placing * { cursor: crosshair !important; }
     const shown = title || L.newNote;
     const p = resolvePos(n.x, n.y, vp().w, vp().h);
     el.style.left = `${p.left}px`; el.style.top = `${p.top}px`;
-    el.style.zIndex = String(Math.round(n.z));
+    el.style.zIndex = String(effZ(n));
+    el.style.setProperty('--a', `${n.angle}deg`);
+    el.dataset.c = n.color; el.dataset.f = n.font;
+    el.classList.toggle('pinned', n.pinned); el.classList.toggle('piled', !!n.piled);
+    el.querySelector('.n-ear').hidden = !n.pinned;
     el.setAttribute('aria-label', L.noteGroup(shown));
-    const t = el.querySelector('.n-title');
-    t.textContent = shown; t.classList.toggle('empty', !title);
     el.querySelector('.n-move').setAttribute('aria-label', L.moveNote(shown));
-    const del = el.querySelector('.n-del');
-    del.setAttribute('aria-label', L.deleteNote(shown)); del.title = L.deleteNote(shown);
+    const mb = el.querySelector('.n-menu-btn');
+    mb.setAttribute('aria-label', L.noteMenu(shown)); mb.title = L.noteMenuLabel;
     el.querySelector('.n-unsaved').hidden = !n.unsaved;
     const c = el.querySelector('.n-count');
     c.hidden = n.text.length < NOTE.countAt;
     c.textContent = `${num.format(n.text.length)} / ${num.format(NOTE.maxText)}`;
+    const key = `${n.font}|${n.size}|${n.text}`;
+    if (el._key !== key) { el._key = key; drawView(n); n.over = fitNote(n); }
   }
   const paintAll = () => { for (const n of notes) paintNote(n); notesEl.hidden = !notes.length; };
 
   function buildNote(n) {
     const el = document.createElement('div');
     el.className = 'note'; el.dataset.id = n.id; el.setAttribute('role', 'group');
-    el.innerHTML = `<div class="n-head"><button type="button" class="n-btn n-move" aria-pressed="false" aria-describedby="nh-${n.id}">${NICON.move}</button><span class="n-tip" id="nh-${n.id}" role="tooltip">${esc(L.moveHint)}</span><span class="n-title"></span><span class="n-unsaved" hidden>${NICON.warn}${esc(L.notSaved)}</span><button type="button" class="n-btn n-del">${NICON.del}</button></div><textarea class="n-text" maxlength="${NOTE.maxText}" spellcheck="false" aria-label="${esc(L.noteText)}" placeholder="${esc(L.notePlaceholder)}"></textarea><span class="n-count" hidden></span>`;
+    el.innerHTML = `<div class="n-paper"></div><span class="n-ear" hidden></span><div class="n-head"><button type="button" class="n-btn n-move" aria-pressed="false" aria-describedby="nh-${n.id}">${NICON.move}</button><span class="n-tip" id="nh-${n.id}" role="tooltip">${esc(L.moveHint)}</span><span class="n-unsaved" hidden>${NICON.warn}${esc(L.notSaved)}</span><button type="button" class="n-btn n-menu-btn" aria-haspopup="menu" aria-expanded="false">${NICON.dots}</button></div><div class="n-body"><div class="n-view" aria-hidden="true"></div><textarea class="n-text" maxlength="${NOTE.maxText}" spellcheck="false" aria-label="${esc(L.noteText)}" placeholder="${esc(L.notePlaceholder)}"></textarea></div><span class="n-count" hidden></span>`;
     el.querySelector('.n-text').value = n.text;
+    n.last = n.text;
     noteEls.set(n.id, el);
     notesEl.appendChild(el);
-    paintNote(n);
     notesEl.hidden = false;
+    paintNote(n);
+    n.wasOver = n.over;
     return el;
   }
 
@@ -1636,7 +1801,7 @@ body.placing, body.placing * { cursor: crosshair !important; }
     const { w, h } = vp();
     const slot = pileSlot(0, w, h);
     const a = anchorOf(slot.left, slot.top, w, h);
-    const n = { id: newId(), text: '', x: a.x, y: a.y, z: topZ() + 1, fresh: true, unsaved: false };
+    const n = { id: newId(), text: '', x: a.x, y: a.y, z: topZ() + 1, angle: randomTilt(Math.random()), ...FRESH, fresh: true, unsaved: false };
     notes.push(n);
     buildNote(n);
     syncCtl();
@@ -1650,6 +1815,7 @@ body.placing, body.placing * { cursor: crosshair !important; }
   }
   function dropNote(n) {
     if (placing === n.id) stopPlacing();
+    if (menuNote === n.id) closeMenu(false);
     const el = noteEls.get(n.id);
     if (el) el.remove();
     noteEls.delete(n.id);
@@ -1676,18 +1842,25 @@ body.placing, body.placing * { cursor: crosshair !important; }
     });
   }
 
+  // Gather: a messy pile in the bottom-right corner, every note a little off and tilted; the stacking order is kept.
+  function settleAnim() {
+    for (const el of noteEls.values()) el.classList.add('gathering');
+    setTimeout(() => { for (const el of noteEls.values()) el.classList.remove('gathering'); }, 650);
+  }
   function gather() {
     if (!notes.length) return;
-    const before = notes.map((n) => ({ n, x: n.x, y: n.y }));
+    const before = notes.map((n) => ({ n, x: n.x, y: n.y, angle: n.angle }));
     const { w, h } = vp();
-    notes.slice().sort((a, b) => b.z - a.z).forEach((n, rank) => {
-      const s = pileSlot(rank, w, h);
-      const a = anchorOf(s.left, s.top, w, h);
-      n.x = a.x; n.y = a.y;
+    const slots = messyPile(notes.length, w, h, Math.random);
+    settleAnim();
+    notes.slice().sort((a, b) => effZ(b) - effZ(a)).forEach((n, rank) => {
+      const sl = slots[rank], a = anchorOf(sl.left, sl.top, w, h);
+      n.x = a.x; n.y = a.y; n.angle = sl.angle; n.piled = true;
     });
     paintAll(); persist();
     setStatus(L.notesGathered(notes.length), () => {
-      for (const b of before) if (notes.includes(b.n)) { b.n.x = b.x; b.n.y = b.y; }
+      settleAnim();
+      for (const b of before) if (notes.includes(b.n)) { b.n.x = b.x; b.n.y = b.y; b.n.angle = b.angle; b.n.piled = false; }
       paintAll(); persist();
       $('#gatherNotes').focus();
     });
@@ -1710,10 +1883,10 @@ body.placing, body.placing * { cursor: crosshair !important; }
     if (!drag) return;
     const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
     if (!drag.moved && Math.hypot(dx, dy) <= 4) return;
-    if (!drag.moved) { drag.moved = true; noteEls.get(drag.n.id).classList.add('lifted'); }
+    const el = noteEls.get(drag.n.id);
+    if (!drag.moved) { drag.moved = true; el.classList.add('lifted'); }
     const { w, h } = vp();
     const p = clampPos(drag.ox + dx, drag.oy + dy, w, h);
-    const el = noteEls.get(drag.n.id);
     el.style.left = `${p.left}px`; el.style.top = `${p.top}px`;
   }
   function onDragEnd() {
@@ -1721,68 +1894,223 @@ body.placing, body.placing * { cursor: crosshair !important; }
     window.removeEventListener('pointerup', onDragEnd);
     window.removeEventListener('pointercancel', onDragEnd);
     const d = drag; drag = null;
-    if (!d || !d.moved || !noteEls.has(d.n.id)) return;
+    if (!d || !noteEls.has(d.n.id)) return;
     const el = noteEls.get(d.n.id);
+    if (!d.moved) { // a click on a piled note pulls it out of the pile and into the text
+      if (d.wasPiled) { d.n.piled = false; paintNote(d.n); el.querySelector('.n-text').focus(); }
+      return;
+    }
     el.classList.remove('lifted');
     suppressClick = true; setTimeout(() => { suppressClick = false; }, 0);
-    d.n.fresh = false;
-    const r = el.getBoundingClientRect();
-    setPos(d.n, snapGrid(r.left), snapGrid(r.top), true);
+    d.n.fresh = false; d.n.piled = false;
+    d.n.angle = settleAngle(d.n.angle, Math.random()); // it settles at a new tilt close to the old one
+    setPos(d.n, snapGrid(parseFloat(el.style.left)), snapGrid(parseFloat(el.style.top)), true);
   }
+  const noteOf = (target) => { const el = target.closest && target.closest('.note'); return el ? byId(el.dataset.id) : null; };
 
   notesEl.addEventListener('pointerdown', (e) => {
-    const el = e.target.closest('.note');
-    const n = el && byId(el.dataset.id);
+    const n = noteOf(e.target);
     if (!n) return;
+    const el = noteEls.get(n.id);
+    el.classList.remove('gathering');
     front(n);
-    if (e.button !== 0 || !e.target.closest('.n-head') || e.target.closest('.n-del')) return;
-    const r = el.getBoundingClientRect();
-    drag = { n, sx: e.clientX, sy: e.clientY, ox: r.left, oy: r.top, moved: false };
+    const grab = (e.target.closest('.n-head') && !e.target.closest('.n-menu-btn')) || n.piled;
+    if (e.button !== 0 || !grab) return;
+    drag = { n, sx: e.clientX, sy: e.clientY, ox: el.offsetLeft, oy: el.offsetTop, moved: false, wasPiled: !!n.piled };
     window.addEventListener('pointermove', onDragMove);
     window.addEventListener('pointerup', onDragEnd);
     window.addEventListener('pointercancel', onDragEnd);
   });
-  notesEl.addEventListener('focusin', (e) => { const el = e.target.closest('.note'); const n = el && byId(el.dataset.id); if (n) front(n); });
-  notesEl.addEventListener('input', (e) => {
-    const el = e.target.closest('.note');
-    const n = el && byId(el.dataset.id);
-    if (!n || !e.target.matches('.n-text')) return;
-    n.text = e.target.value; n.fresh = false;
-    paintNote(n);
-    persistSoon();
+  notesEl.addEventListener('focusin', (e) => {
+    const n = noteOf(e.target);
+    if (!n) return;
+    if (n.piled && !(drag && drag.n === n)) { n.piled = false; paintNote(n); }
+    front(n);
   });
+
+  // ---- text: quick list, title emphasis, and the paper never overflows ----
+  const lineBounds = (v, pos) => { const s = v.lastIndexOf('\n', pos - 1) + 1; let e = v.indexOf('\n', pos); if (e < 0) e = v.length; return [s, e]; };
+  // Called after any change of the text: draw it, step the font down, or refuse input that cannot fit even at the smallest size.
+  function commitText(n, ta, before) {
+    n.text = ta.value; n.fresh = false;
+    paintNote(n);
+    if (n.over && !n.wasOver && n.text.length > n.last.length) {
+      ta.value = n.last; n.text = n.last;
+      if (before) ta.setSelectionRange(before[0], before[1]);
+      paintNote(n);
+      sayNotes(L.noteFull);
+    }
+    n.last = n.text; n.wasOver = n.over;
+    persistSoon();
+  }
+  function strikeLine(n, ta, pos) {
+    const [s, e] = lineBounds(ta.value, pos);
+    const line = ta.value.slice(s, e), next = toggleStrike(line);
+    if (next === line) return false;
+    ta.setRangeText(next, s, e, 'preserve');
+    commitText(n, ta, null);
+    return true;
+  }
+  notesEl.addEventListener('beforeinput', (e) => {
+    const n = noteOf(e.target);
+    if (n && e.target.matches('.n-text')) n.sel = [e.target.selectionStart, e.target.selectionEnd];
+  });
+  notesEl.addEventListener('input', (e) => {
+    const n = noteOf(e.target);
+    if (!n || !e.target.matches('.n-text')) return;
+    const ta = e.target;
+    if (e.inputType === 'insertText' && e.data === ' ' && ta.selectionStart === ta.selectionEnd) { // "- " or "* " at the start of a line: a bullet
+      const pos = ta.selectionStart, [s] = lineBounds(ta.value, pos);
+      const pre = ta.value.slice(s, pos);
+      if (pre === '- ' || pre === '* ') ta.setRangeText(`${BULLET} `, s, pos, 'end');
+    }
+    commitText(n, ta, n.sel);
+  });
+  notesEl.addEventListener('scroll', (e) => {
+    if (!e.target.matches || !e.target.matches('.n-text')) return;
+    e.target.parentNode.querySelector('.n-view').scrollTop = e.target.scrollTop;
+  }, true);
   notesEl.addEventListener('focusout', (e) => {
-    const el = e.target.closest('.note');
-    const n = el && byId(el.dataset.id);
+    const n = noteOf(e.target);
+    const el = n && noteEls.get(n.id);
     if (!n || (e.relatedTarget && el.contains(e.relatedTarget))) return;
     setTimeout(() => {
-      if (!notes.includes(n) || el.contains(document.activeElement) || (drag && drag.n === n) || placing === n.id) return;
+      if (!notes.includes(n) || el.contains(document.activeElement) || (drag && drag.n === n) || placing === n.id || menuNote === n.id) return;
       if (n.fresh && !n.text) { removeNote(n); return; }
       persist();
     }, 0);
   });
   notesEl.addEventListener('click', (e) => {
-    const el = e.target.closest('.note');
-    const n = el && byId(el.dataset.id);
+    const n = noteOf(e.target);
     if (!n) return;
-    if (e.target.closest('.n-del')) { deleteNote(n); return; }
+    if (e.target.closest('.n-menu-btn')) {
+      const b = e.target.closest('.n-menu-btn'), r = b.getBoundingClientRect();
+      openMenu(n, r.right - MENU_W, r.bottom + 4, b);
+      return;
+    }
     if (e.target.closest('.n-move')) {
       if (suppressClick) return;
       if (placing === n.id) stopPlacing(); else startPlacing(n);
+      return;
     }
+    // a plain click on a bullet line strikes it through like a pencil; clicking again clears it
+    const ta = e.target.closest('.n-text');
+    if (ta && e.detail === 1 && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey && ta.selectionStart === ta.selectionEnd && !suppressClick) strikeLine(n, ta, ta.selectionStart);
   });
   notesEl.addEventListener('keydown', (e) => {
-    const el = e.target.closest('.note');
-    const n = el && byId(el.dataset.id);
+    const n = noteOf(e.target);
     if (!n) return;
-    if (e.target.matches('.n-text') && e.key === 'Escape' && n.fresh && !n.text) { e.preventDefault(); removeNote(n); $('#newNote').focus(); return; }
+    if ((e.key === 'F10' && e.shiftKey) || e.key === 'ContextMenu') { // keyboard path to the note menu
+      e.preventDefault();
+      const el = noteEls.get(n.id), r = (e.target.closest('.n-menu-btn') || el).getBoundingClientRect();
+      if (e.target.closest('.n-menu-btn')) openMenu(n, r.right - MENU_W, r.bottom + 4, e.target);
+      else openMenu(n, r.left + 16, r.top + 32, e.target);
+      return;
+    }
+    const ta = e.target.matches('.n-text') ? e.target : null;
+    if (ta && e.key === 'Escape' && n.fresh && !n.text) { e.preventDefault(); removeNote(n); $('#newNote').focus(); return; }
+    if (ta && e.key === 'Enter' && !e.isComposing && !e.altKey && !e.shiftKey && ta.selectionStart === ta.selectionEnd) {
+      const pos = ta.selectionStart, [s, le] = lineBounds(ta.value, pos);
+      const line = ta.value.slice(s, le), kind = lineKind(line);
+      if (kind && (e.ctrlKey || e.metaKey)) { e.preventDefault(); strikeLine(n, ta, pos); return; } // keyboard way to strike a bullet
+      if (kind && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        n.sel = [pos, pos];
+        if (line.length <= 2) ta.setRangeText('', s, le, 'end'); // Enter on an empty bullet ends the list
+        else ta.setRangeText(`\n${BULLET} `, pos, pos, 'end'); // Enter in a bullet starts the next one
+        commitText(n, ta, n.sel);
+        return;
+      }
+    }
     const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
     if (!d || !e.target.matches('.n-move')) return;
     e.preventDefault();
     const step = NOTE.grid * (e.shiftKey ? 4 : 1);
-    const r = el.getBoundingClientRect();
-    setPos(n, snapGrid(r.left + d[0] * step), snapGrid(r.top + d[1] * step), true);
+    const el = noteEls.get(n.id);
+    setPos(n, snapGrid(el.offsetLeft + d[0] * step), snapGrid(el.offsetTop + d[1] * step), true);
   });
+  // The note's own menu replaces the browser's. Kept inside the screen edges.
+  notesEl.addEventListener('contextmenu', (e) => {
+    const n = noteOf(e.target);
+    if (!n) return;
+    e.preventDefault();
+    if (menuEl && performance.now() - menuAt < 400) return; // the keyboard path already opened it
+    openMenu(n, e.clientX, e.clientY, noteEls.get(n.id).querySelector('.n-text'));
+  });
+
+  // ---- the note menu ----
+  const MENU_W = 232;
+  let menuEl = null, menuNote = null, menuOpener = null, menuAt = 0;
+  const colorName = { yellow: 'colYellow', pink: 'colPink', mint: 'colMint', blue: 'colBlue', orange: 'colOrange' };
+  const fontName = { caveat: 'Caveat', kalam: 'Kalam', patrick: 'Patrick Hand', architects: 'Architects Daughter' };
+  function menuItems() { return menuEl ? [...menuEl.querySelectorAll('button[data-act]:not([aria-disabled="true"])')] : []; }
+  function syncMenu() {
+    const n = byId(menuNote);
+    if (!menuEl || !n) return;
+    for (const b of menuEl.querySelectorAll('[data-act="color"]')) b.setAttribute('aria-checked', String(b.dataset.v === n.color));
+    for (const b of menuEl.querySelectorAll('[data-act="font"]')) b.setAttribute('aria-checked', String(b.dataset.v === n.font));
+    menuEl.querySelector('[data-act="pin"]').setAttribute('aria-checked', String(n.pinned));
+    menuEl.querySelector('[data-act="up"]').setAttribute('aria-disabled', String(stepSize(n.size, 1) == null));
+    menuEl.querySelector('[data-act="down"]').setAttribute('aria-disabled', String(stepSize(n.size, -1) == null));
+  }
+  function openMenu(n, x, y, opener) {
+    closeMenu(false);
+    menuNote = n.id; menuOpener = opener; menuAt = performance.now();
+    const m = document.createElement('div');
+    m.className = 'n-menu'; m.setAttribute('role', 'menu'); m.setAttribute('aria-label', L.noteMenu(noteTitle(n.text) || L.newNote));
+    const item = (act, v, label, extra = '') => `<button type="button" role="menuitem${extra}" class="nm-it" data-act="${act}"${v ? ` data-v="${v}"` : ''}>${label}</button>`;
+    m.innerHTML = `<div class="nm-sw" role="group" aria-label="${esc(L.mColor)}">${COLORS.map((c) => `<button type="button" role="menuitemradio" data-act="color" data-v="${c}" style="--sw: var(--nc-${c})" aria-label="${esc(L[colorName[c]])}" title="${esc(L[colorName[c]])}"></button>`).join('')}</div>`
+      + `<div class="nm-fonts" role="group" aria-label="${esc(L.mFont)}">${FONTS.map((f) => item('font', f, f === 'sans' ? esc(L.fontPlain) : `<span class="nm-f-${f}">${fontName[f]}</span>`, 'radio')).join('')}</div>`
+      + `<div class="nm-row" role="group" aria-label="${esc(L.mSize)}"><button type="button" role="menuitem" class="nm-it" data-act="down" aria-label="${esc(L.sizeDown)}" title="${esc(L.sizeDown)}">A&minus;</button><button type="button" role="menuitem" class="nm-it" data-act="up" aria-label="${esc(L.sizeUp)}" title="${esc(L.sizeUp)}">A+</button></div>`
+      + `<div class="nm-fonts" role="group" aria-label="${esc(L.mTilt)}" style="border-top:1px solid var(--rule-soft);margin-top:4px;padding-top:4px">${item('random', '', esc(L.tiltRandom))}${item('reset', '', esc(L.tiltReset))}</div>`
+      + `${item('pin', '', esc(L.pinFront), 'checkbox')}${item('delete', '', esc(L.deleteNoteMenu)).replace('class="nm-it"', 'class="nm-it nm-del"')}`;
+    document.body.appendChild(m);
+    menuEl = m;
+    const r = m.getBoundingClientRect(), p = menuPos(x, y, r.width, r.height, vp().w, vp().h);
+    m.style.left = `${p.left}px`; m.style.top = `${p.top}px`;
+    const mb = noteEls.get(n.id).querySelector('.n-menu-btn'); mb.setAttribute('aria-expanded', 'true');
+    syncMenu();
+    (m.querySelector(`[data-act="color"][data-v="${n.color}"]`) || menuItems()[0]).focus();
+  }
+  function closeMenu(refocus) {
+    if (!menuEl) return;
+    const id = menuNote, opener = menuOpener;
+    menuEl.remove(); menuEl = null; menuNote = null; menuOpener = null;
+    const el = noteEls.get(id);
+    if (el) el.querySelector('.n-menu-btn').setAttribute('aria-expanded', 'false');
+    if (!refocus) return;
+    const back = opener && opener.isConnected ? opener : el && el.querySelector('.n-text');
+    if (back) back.focus({ preventScroll: true });
+  }
+  document.addEventListener('click', (e) => {
+    const b = menuEl && e.target.closest && e.target.closest('.n-menu button[data-act]');
+    if (!b) return;
+    const n = byId(menuNote);
+    if (!n || b.getAttribute('aria-disabled') === 'true') return;
+    const act = b.dataset.act, v = b.dataset.v;
+    if (act === 'color') { n.color = v; paintNote(n); persist(); closeMenu(true); }
+    else if (act === 'font') { n.font = v; paintNote(n); persist(); closeMenu(true); }
+    else if (act === 'up' || act === 'down') { n.size = stepSize(n.size, act === 'up' ? 1 : -1); paintNote(n); persist(); syncMenu(); } // stays open: click again and again
+    else if (act === 'random') { n.angle = randomTilt(Math.random()); paintNote(n); persist(); }
+    else if (act === 'reset') { n.angle = 0; paintNote(n); persist(); }
+    else if (act === 'pin') { n.pinned = !n.pinned; paintNote(n); persist(); closeMenu(true); }
+    else if (act === 'delete') { closeMenu(false); deleteNote(n); }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (!menuEl || !menuEl.contains(e.target)) return;
+    const items = menuItems(), i = items.indexOf(document.activeElement);
+    const go = (k) => { e.preventDefault(); if (items.length) items[(k + items.length) % items.length].focus(); };
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') go(i + 1);
+    else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') go(i - 1);
+    else if (e.key === 'Home') go(0);
+    else if (e.key === 'End') go(items.length - 1);
+    else if (e.key === 'Escape' || e.key === 'Tab') { e.preventDefault(); e.stopPropagation(); closeMenu(true); }
+    else if ((e.key === 'F10' && e.shiftKey) || e.key === 'ContextMenu') { e.preventDefault(); }
+  }, true);
+  document.addEventListener('pointerdown', (e) => { if (menuEl && !menuEl.contains(e.target)) closeMenu(false); }, true);
+  window.addEventListener('blur', () => closeMenu(false));
+  document.addEventListener('contextmenu', (e) => { if (menuEl && menuEl.contains(e.target)) e.preventDefault(); });
+
   // Click to place (WCAG 2.5.7): the next click on the page puts the note's top-left corner there
   document.addEventListener('click', (e) => {
     if (!placing) return;
@@ -1806,7 +2134,7 @@ body.placing, body.placing * { cursor: crosshair !important; }
   document.addEventListener('focusin', (e) => {
     unreveal();
     const t = e.target;
-    if (!t || !t.getBoundingClientRect || t.closest('.notes, .nctl')) return;
+    if (!t || !t.getBoundingClientRect || t.closest('.notes, .nctl, .n-menu')) return;
     const b = t.getBoundingClientRect();
     for (const el of noteEls.values()) {
       const r = el.getBoundingClientRect();
@@ -1815,6 +2143,7 @@ body.placing, body.placing * { cursor: crosshair !important; }
   });
   document.addEventListener('focusout', (e) => { if (!e.relatedTarget) unreveal(); });
   window.addEventListener('resize', paintAll);
+  if (document.fonts) document.fonts.addEventListener('loadingdone', () => { for (const el of noteEls.values()) el._key = ''; paintAll(); }); // a handwriting font arrived: measure again
 
   $('#newNote').addEventListener('click', () => { if ($('#newNote').getAttribute('aria-disabled') !== 'true') newNote(); });
   $('#gatherNotes').addEventListener('click', () => { if ($('#gatherNotes').getAttribute('aria-disabled') !== 'true') gather(); });
