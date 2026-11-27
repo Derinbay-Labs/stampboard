@@ -180,14 +180,14 @@ async function run(width, height, scheme, lang = 'en') {
 }
 
 // ---------- Sticky notes ----------
-// The demo server answers with an exact fixture and the page treats that as "demo". To test the real storage path
-// the answer is changed to look like an ordinary organisation, so no GitHub token or real repository is needed.
+// The demo server marks its page with data-demo and the page then keeps notes in memory. To test the real storage
+// path the page is served without that mark, so no GitHub token or real repository is needed.
 async function asOrdinary(ctx) {
-  await ctx.route('**/api/runs*', async (route) => {
+  await ctx.route(/\/(index\.html)?(\?.*)?$/, async (route) => {
+    if (route.request().resourceType() !== 'document') return route.fallback();
     const res = await route.fetch();
-    const body = await res.json();
-    body.owners = ['sample-org'];
-    await route.fulfill({ response: res, json: body });
+    const html = (await res.text()).replace('<html lang="en" data-demo>', '<html lang="en">');
+    await route.fulfill({ response: res, body: html });
   });
 }
 const seed = (count) => ({

@@ -652,7 +652,10 @@ const server = http.createServer(async (req, res) => {
       return;
     }
     if (url.pathname === '/' || url.pathname === '/index.html') {
-      send(res, 200, 'text/html; charset=utf-8', await readFile(path.join(appDir, 'index.html')), { 'Cache-Control': 'no-store' });
+      let page = await readFile(path.join(appDir, 'index.html'), 'utf8');
+      // The demo page is marked so it keeps sticky notes in memory and never touches the stored ones (sticky-notes.md 5.1).
+      if (DEMO) page = page.replace('<html lang="en">', '<html lang="en" data-demo>');
+      send(res, 200, 'text/html; charset=utf-8', page, { 'Cache-Control': 'no-store' });
       return;
     }
     const font = url.pathname.match(/^\/fonts\/([a-z0-9-]+\.woff2)$/);

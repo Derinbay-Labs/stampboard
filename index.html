@@ -1436,7 +1436,6 @@ body.placing, body.placing * { cursor: crosshair !important; }
       unreachable = true;
     } finally {
       polling = false;
-      initNotes(isDemoSnapshot(data));
       render();
     }
   }
@@ -1487,8 +1486,8 @@ body.placing, body.placing * { cursor: crosshair !important; }
   const NOTES_KEY = 'stampboard-notes';
   const notesEl = $('#notes');
   const memStore = (() => { const m = new Map(); return { get: (k) => (m.has(k) ? m.get(k) : null), set: (k, v) => { m.set(k, v); return true; }, remove: (k) => { m.delete(k); } }; })();
-  // The demo snapshot is the only one with this exact fixture; the page learns it from the first answer.
-  const isDemoSnapshot = (d) => !!d && Array.isArray(d.owners) && d.owners.length === 1 && d.owners[0] === 'acme' && d.tookMs === 1240 && !!d.work && d.work.tookMs === 820;
+  // server.mjs --demo serves this page with data-demo on <html>; only then the in-memory store is used.
+  const DEMO_PAGE = document.documentElement.hasAttribute('data-demo');
   const nIcon = (inner) => `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${inner}</svg>`;
   const NICON = {
     move: nIcon('<path d="M8 2.5v11M2.5 8h11"/><path d="M6 4.5 8 2.5l2 2M6 11.5l2 2 2-2M4.5 6 2.5 8l2 2M11.5 6l2 2-2 2"/>'),
@@ -1786,7 +1785,7 @@ body.placing, body.placing * { cursor: crosshair !important; }
   });
   notesEl.setAttribute('aria-label', L.notes);
 
-  // Called once, after the first answer from the server (or its failure): that answer says whether this is the demo.
+  // Called once at load: notes come from browser storage, never from the server or the GitHub scan.
   function initNotes(demo) {
     if (notesReady) return;
     notesReady = true;
@@ -1798,6 +1797,7 @@ body.placing, body.placing * { cursor: crosshair !important; }
     paintAll(); syncCtl();
   }
 
+  initNotes(DEMO_PAGE);
   render();
   poll(false);
   setInterval(() => poll(false), 4000);
