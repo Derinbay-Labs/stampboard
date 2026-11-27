@@ -151,18 +151,16 @@ four notes are piled and focus is on Gather notes.
 - **Where a new note opens:** at the front of the pile spot: 24px from the right edge, its bottom
   44px above the viewport bottom, clear of the footer buttons' hit area. A new note on top of the pile is
   simply the pile's newest card; the owner drags it out if he wants it elsewhere.
-- **Gather:** every note moves to the pile in the bottom-right corner, at `right: 24px`. The front
-  note's bottom is 44px above the viewport bottom. Each older note sits 36px higher (the slot), and
-  since #81 every note then gets a random 8 to 18px offset and a tilt, so the pile is messy. The front note is the one touched last; the pile
-  keeps the notes' z-order.
-- **Pile size:** `216 + (n − 1) × 36` px tall. The pile top never goes above 148px, which is below
-  the board's tools row. So at 1920x1080 up to 19 notes fit in one pile column at the 36px step, and at 1633x930
-  up to 15. The step never shrinks, so every back note's header (Move and Note options) stays fully
-  exposed. Further notes start a second column 252px to the left, then a third, filled the same
-  way: the 50-note maximum takes 3 columns at 1080px tall and 4 at 930px.
+- **Gather (replaced by #81, section 0):** every note goes to the same spot in the bottom-right corner:
+  `right: 24px`, the bottom 44px above the viewport bottom. Each note gets its own random 8 to 18px
+  X and Y offset (either direction) and a -8 to +8 degree tilt, so the pile is messy, not stepped. The
+  front note is the one touched last; the pile keeps the notes' z-order.
+- **Pile size:** one note plus the offsets, about 258x234px, for any number of notes (the old 36px
+  step, extra columns and the 148px top limit no longer apply). Back notes are partly covered; a
+  back note is pulled out by pressing any part of it that shows.
 - **With #72's Shelf:** if the Shelf wins, the pile's bottom offset adds the shelf line's height,
   so the pile sits above the shelf, not on it.
-- **What the pile covers:** at 1920x1080 with 4 notes, a 240x324 block over the right end of the
+- **What the pile covers:** at 1920x1080, a block of about 258x234px over the right end of the
   Issues ledger (its age and seal columns) and the bottom-right corner of the Agents sheet.
 - **After gathering:** the pile positions become the notes' stored positions. Undo, offered for
   10 seconds in the footer status, returns every note to where it was.
@@ -497,10 +495,10 @@ Web only, on desktop evergreen browsers. Pointer Events cover mouse, pen and tou
 - **Option 1 footer hit area:** 44px only because the footer sits 12px above the viewport edge; if
   #72 or a later change moves the footer up, the hit area must be rechecked. Decides: ux-designer
   at implementation review.
-- **Pile header targets (Option 1):** in the pile, each back note shows a 36px header strip (#81: 28px
-  buttons for Move and Note options); they are fully visible, but their 44px hit area is cut to about 32x38px by the
-  note in front. That is above WCAG 2.5.8's 24px and below the house 44px bar. Decides:
-  ux-designer at implementation review.
+- **Pile header targets (Option 1):** replaced by #81. In the messy pile a back note's header
+  (28px Move and Note options buttons) can be partly or wholly covered; the pile does not promise
+  that every header shows. A back note is reached by pressing any visible part of it, which pulls it
+  out and to the front. Decides: ux-designer at implementation review.
 - **Small buttons in Options 2 and 3:** Option 2's board buttons are the existing 32px `.btn`
   height, and the drawer's icon buttons are 30px wide with a 34x44px hit area. Both are above
   WCAG's 24px and below the house 44px bar. Decides: ux-designer, if the CEO picks either option.

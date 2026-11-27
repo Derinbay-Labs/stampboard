@@ -1906,6 +1906,8 @@ body.placing, body.placing * { cursor: crosshair !important; }
     d.n.angle = settleAngle(d.n.angle, Math.random()); // it settles at a new tilt close to the old one
     setPos(d.n, snapGrid(parseFloat(el.style.left)), snapGrid(parseFloat(el.style.top)), true);
   }
+  // The pointer can come down over a link under the note's transparent paper; the browser would then start a native link drag and cancel the pointer mid-move.
+  document.addEventListener('dragstart', (e) => { if (drag) e.preventDefault(); }, true);
   const noteOf = (target) => { const el = target.closest && target.closest('.note'); return el ? byId(el.dataset.id) : null; };
 
   notesEl.addEventListener('pointerdown', (e) => {
