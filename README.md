@@ -56,8 +56,9 @@ None of these need administrator rights.
 | macOS | LaunchAgent `~/Library/LaunchAgents/com.derinbay.stampboard.plist` | `~/Library/Logs/stampboard/server.log` |
 | Linux | systemd user unit `stampboard.service` | `~/.local/state/stampboard/server.log` |
 
-Every login item points at this folder and at the Node binary you ran it with. If you move the
-folder or change your Node install, run `npm run install-service` again.
+Every login item points at this folder, at the Node binary you ran it with and at the folder of the
+`gh` your shell finds. If you move the folder or change your Node or `gh` install, run
+`npm run install-service` again.
 
 The project was called GitHub Run Panel until November 2026. If you installed it under that name,
 run `npm run install-service` once more: it removes the old login item and starts Stampboard.

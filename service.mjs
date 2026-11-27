@@ -23,7 +23,14 @@ const home = os.homedir();
 const platform = process.platform;
 const { port } = await loadConfig();
 const url = `http://localhost:${port}`;
-const PATH = ['/opt/homebrew/bin', '/usr/local/bin', '/usr/bin', '/bin', path.dirname(node)].join(':');
+// The panel runs `gh auth token`. gh may live outside these defaults (mise, asdf, ~/.local/bin; #77), so the login
+// item also gets the directory of the gh this shell finds. `mise activate` puts a versioned install directory first,
+// which vanishes on upgrade, so a mise or asdf shims directory wins when the shell has one.
+const ghDirs = (process.env.PATH || '')
+  .split(path.delimiter)
+  .filter((dir) => dir && existsSync(path.join(dir, platform === 'win32' ? 'gh.exe' : 'gh')));
+const ghDir = ghDirs.find((dir) => path.basename(dir) === 'shims') || ghDirs[0];
+const PATH = [...new Set(['/opt/homebrew/bin', '/usr/local/bin', '/usr/bin', '/bin', path.dirname(node), ghDir].filter(Boolean))].join(':');
 
 const registrationOf = (name, label) => ({
   win32: path.join(process.env.APPDATA || path.join(home, 'AppData', 'Roaming'), 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'Startup', `${name}.vbs`),
