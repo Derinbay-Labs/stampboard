@@ -19,6 +19,8 @@
     "uninstall-service": "node service.mjs uninstall",
     "start-service": "node service.mjs start",
     "stop": "node service.mjs stop",
-    "status": "node service.mjs status"
+    "status": "node service.mjs status",
+    "test": "node --test test/*.test.mjs",
+    "test:browser": "node test/browser.mjs"
   }
 }
