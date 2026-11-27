@@ -434,6 +434,50 @@ async function notesDemo() {
   }
 }
 
+// Two tabs on one store (every server start opens a new tab): a tab never writes a stale snapshot over newer notes.
+async function notesTwoPages() {
+  const ctx = await browser.newContext({ viewport: { width: 1633, height: 930 } });
+  await asOrdinary(ctx);
+  await ctx.addInitScript((v) => { if (!localStorage.getItem('stampboard-notes')) localStorage.setItem('stampboard-notes', v); }, JSON.stringify(seed(1)));
+  const a = await ctx.newPage();
+  const b = await ctx.newPage();
+  const texts = async (page) => (await noteRects(page)).map((r) => r.text).sort();
+  const stored = (page) => page.evaluate(() => JSON.parse(localStorage.getItem('stampboard-notes')).notes.map((n) => n.text).sort());
+  try {
+    for (const pg of [a, b]) { await pg.goto(`http://localhost:${port}/?lang=en`); await pg.waitForSelector('.departures tr'); await ready(pg); }
+    await b.click('#newNote');
+    await b.keyboard.type('Sample note B');
+    await b.waitForTimeout(600);
+    // page A still holds only the seed: touching, editing, moving and gathering must not erase B's note
+    await a.click('.note .n-head');
+    await a.waitForTimeout(100);
+    assert.deepEqual(await stored(a), ['Sample note 0', 'Sample note B'], 'a touch in A keeps the note made in B');
+    await a.click('.note .n-text');
+    await a.keyboard.type(' edited');
+    await a.waitForTimeout(600);
+    assert.deepEqual(await stored(a), ['Sample note 0 edited', 'Sample note B'], 'an edit in A keeps the note made in B');
+    await a.click('#gatherNotes');
+    assert.deepEqual(await stored(a), ['Sample note 0 edited', 'Sample note B'], 'gather in A keeps the note made in B');
+    assert.deepEqual(await texts(a), ['Sample note 0 edited', 'Sample note B'], 'A shows the note made in B');
+    // a delete in one page does not come back from the other
+    const del = a.locator('.note', { has: a.locator('.n-del[aria-label="Delete note: Sample note B"]') }).locator('.n-del');
+    if (await del.count()) await del.click();
+    await a.waitForTimeout(200);
+    await b.waitForTimeout(200);
+    assert.deepEqual(await texts(b), ['Sample note 0 edited'], 'the delete in A reaches B');
+    await b.click('.note .n-head');
+    await b.waitForTimeout(100);
+    assert.deepEqual(await stored(b), ['Sample note 0 edited'], 'B does not bring the deleted note back');
+    assert.deepEqual(await texts(a), ['Sample note 0 edited'], 'A does not get it back either');
+    console.log('ok   notes two pages');
+  } catch (err) {
+    failed++;
+    console.error(`FAIL notes two pages: ${err.message}`);
+  } finally {
+    await ctx.close();
+  }
+}
+
 try {
   for (let n = 0; n < 50; n++) {
     try { if ((await fetch(`http://localhost:${port}/`)).ok) break; } catch { /* not up yet */ }
@@ -446,6 +490,7 @@ try {
   await notesLimit(1920, 1080);
   await notesLimit(1633, 930);
   await notesDemo();
+  await notesTwoPages();
 } finally {
   await browser.close();
   server.kill();

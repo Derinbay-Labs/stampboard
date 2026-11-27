@@ -1506,13 +1506,50 @@ body.placing, body.placing * { cursor: crosshair !important; }
   const newId = () => `n${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
   const topZ = () => notes.reduce((m, n) => Math.max(m, n.z), 0);
 
+  // Several tabs can be open on the same store (every server start opens a new one). A tab never writes its own
+  // snapshot over newer stored notes: before each write, and on each storage event, it merges by id.
+  // known = ids this tab last saw in storage; gone = ids this tab deleted (so a stale stored copy is not re-adopted).
+  const known = new Set(), gone = new Set();
+  function mergeStored(live) {
+    const s = sanitizeNotes(notesStore.get(NOTES_KEY));
+    if (s.bad) return;
+    rest = s.rest;
+    const stored = new Map(s.notes.map((r) => [r.id, r]));
+    const active = document.activeElement;
+    let changed = false;
+    for (const n of notes.slice()) {
+      const el = noteEls.get(n.id);
+      const dirty = !!saveTimer; // typed here, not saved yet
+      const typing = dirty || (el && active && el.contains(active) && active.matches('.n-text')); // keep caret and text
+      const r = stored.get(n.id);
+      if (!r) {
+        if (!known.has(n.id)) continue; // new in this tab, not saved yet
+        if (dirty) { known.delete(n.id); continue; } // deleted elsewhere but being typed here: keep it and save it again
+        dropNote(n); changed = true;
+      } else if (live && !dirty && !(drag && drag.n === n)) {
+        if (!typing && n.text !== r.text) { n.text = r.text; if (el) el.querySelector('.n-text').value = r.text; changed = true; }
+        if (JSON.stringify([n.x, n.y, n.z]) !== JSON.stringify([r.x, r.y, r.z])) { n.x = r.x; n.y = r.y; n.z = r.z; changed = true; }
+      }
+    }
+    for (const r of s.notes) {
+      known.add(r.id);
+      if (byId(r.id) || gone.has(r.id)) continue;
+      if (notes.length >= NOTE.max) { rest.push(r); continue; } // over the limit: kept unchanged in storage
+      const n = { ...r, fresh: false, unsaved: false };
+      notes.push(n); buildNote(n); changed = true;
+    }
+    if (changed) { paintAll(); syncCtl(); }
+  }
+
   function persist() {
     if (!notesReady) return;
     clearTimeout(saveTimer); saveTimer = 0;
+    if (!DEMO_PAGE) mergeStored(false);
     let ok = true;
     if (rawBad != null && !rawKept) { ok = notesStore.set(`${NOTES_KEY}-unreadable`, rawBad); rawKept = ok; } // never overwrite what we could not read
     const recs = notes.filter((n) => !n.fresh || n.text).map(({ id, text, x, y, z }) => ({ id, text, x, y, z }));
     ok = ok && notesStore.set(NOTES_KEY, JSON.stringify({ v: 1, notes: recs.concat(rest) }));
+    if (ok) { known.clear(); for (const r of recs) known.add(r.id); }
     saveFailed = !ok;
     for (const n of notes) { n.unsaved = !ok; paintNote(n); }
     drawStatus();
@@ -1607,7 +1644,11 @@ body.placing, body.placing * { cursor: crosshair !important; }
   }
 
   function removeNote(n) {
-    clearTimeout(saveTimer);
+    clearTimeout(saveTimer); saveTimer = 0;
+    dropNote(n);
+  }
+  function dropNote(n) {
+    gone.add(n.id);
     if (placing === n.id) stopPlacing();
     const el = noteEls.get(n.id);
     if (el) el.remove();
@@ -1627,7 +1668,7 @@ body.placing, body.placing * { cursor: crosshair !important; }
     if (!keep) return;
     setStatus(L.noteDeleted, () => {
       if (notes.length >= NOTE.max) { setStatus(L.notesLimit); return; }
-      keep.fresh = false; keep.unsaved = false;
+      keep.fresh = false; keep.unsaved = false; gone.delete(keep.id);
       notes.splice(Math.min(i, notes.length), 0, keep);
       buildNote(keep);
       persist(); syncCtl();
@@ -1793,6 +1834,8 @@ body.placing, body.placing * { cursor: crosshair !important; }
     const s = sanitizeNotes(notesStore.get(NOTES_KEY));
     notes = s.notes; rest = s.rest;
     if (s.bad) rawBad = notesStore.get(NOTES_KEY);
+    for (const n of notes) known.add(n.id);
+    if (!demo) window.addEventListener('storage', (e) => { if (e.key === NOTES_KEY && e.storageArea === localStorage) mergeStored(true); });
     for (const n of notes) buildNote(n);
     paintAll(); syncCtl();
   }
