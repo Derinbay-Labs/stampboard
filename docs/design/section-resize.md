@@ -1,7 +1,7 @@
 # Section resize: collapse and expand buttons on the four sections
 
-Design for issue #65. **Awaiting the CEO's pick** (constitution §2); nothing is built before it.
-Recommended default: **Option 1, Corner pair** (section 4).
+Design for issue #65. **Accepted: Option 1, Corner pair** (section 4.1), chosen by the CEO on
+2026-11-27 in #72. Options 2 and 3 are kept for the record; implementation is #67.
 
 Each option has a light mockup in English and a dark mockup in Turkish. Each mockup is one
 self-contained HTML file that renders the real page: the demo DOM with the scripts stripped and the
@@ -55,7 +55,7 @@ section looks like, how the two buttons combine, and how a ledger's "twice" is m
 | **2. Shelf** | [light EN](section-resize/mockups/option-2-light.html) · [dark TR](section-resize/mockups/option-2-dark.html) | [light](section-resize/checks/option-2-light-1633x930.png) · [dark](section-resize/checks/option-2-dark-1633x930.png) | All folded sections share one 36px line, so it frees the most room. The tabs read horizontally. A ledger's Expand is a plain width split, the simplest to build. | A folded section leaves its place, which costs spatial memory on a wallboard. A ledger's Expand gains width but no rows. When the board is shelved, its clock and tools must move to the shelf. It adds a new component. |
 | **3. Step ladder** | [light EN](section-resize/mockups/option-3-light.html) · [dark TR](section-resize/mockups/option-3-dark.html) | [light](section-resize/checks/option-3-light-1633x930.png) · [dark](section-resize/checks/option-3-dark-1633x930.png) | A symmetric −/+ segment: every step can be undone by the other button, with no Reset needed. The folded look is the same as Option 1's. | "Collapse" becomes a minus that halves before it folds, so folding a large section takes several presses. It reads as zoom, not fold. Disabled halves of the segment are common at the floors. |
 
-**Recommended default: Option 1.** It is the CEO's request taken literally: a collapse and an
+**Recommended default, and the CEO's pick (#72): Option 1.** It is the CEO's request taken literally: a collapse and an
 expand button per section, with Expand doubling the section and everything else shrinking in
 proportion. It keeps every section where the owner expects it, and a folded section still shows
 its count and its seal-red attention note. That matters on a wallboard, which is read at a glance
@@ -415,7 +415,7 @@ template, because the accusative suffix differs.
   - Reset returns the measurements of `ledger-filters-and-height.md` §12 exactly.
 - **Motion:** none added.
 
-## 10. DESIGN.md lines to update (after the pick; not edited here)
+## 10. DESIGN.md lines (applied after the pick)
 
 - **Line 9 (Agents sheet):** after "…(+34px with chip rows).", add "These rules hold until the
   owner resizes a section; the explicit layout (`docs/design/section-resize.md`) then replaces
