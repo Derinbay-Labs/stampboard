@@ -1,6 +1,8 @@
 // Browser check for the section resize buttons (docs/design/section-resize.md section 9):
 // at 1920x1080 and 1633x930, light and dark, after a sequence of presses the page still fits (no scroll),
 // every open section is above its floor, and Reset returns the default measurements exactly.
+// It also checks the sticky notes (docs/design/sticky-notes.md, Option 1): create, persist, drag, move, gather, limit,
+// EN/TR, light and dark, and that the --demo page never touches the stored notes. Note text here is invented.
 // Run: node test/browser.mjs   (needs Playwright's Chromium; it is borrowed from web/node_modules, see package.json "test:browser")
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
@@ -177,6 +179,261 @@ async function run(width, height, scheme, lang = 'en') {
   }
 }
 
+// ---------- Sticky notes ----------
+// The demo server answers with an exact fixture and the page treats that as "demo". To test the real storage path
+// the answer is changed to look like an ordinary organisation, so no GitHub token or real repository is needed.
+async function asOrdinary(ctx) {
+  await ctx.route('**/api/runs*', async (route) => {
+    const res = await route.fetch();
+    const body = await res.json();
+    body.owners = ['sample-org'];
+    await route.fulfill({ response: res, json: body });
+  });
+}
+const seed = (count) => ({
+  v: 1,
+  notes: Array.from({ length: count }, (_, i) => ({ id: `s${i}`, text: `Sample note ${i}`, x: { e: 'l', o: 48 + (i % 20) * 24 }, y: { e: 't', o: 180 + (i % 10) * 24 }, z: i })),
+});
+const noteRects = (page) => page.evaluate(() => [...document.querySelectorAll('.note')].map((el) => {
+  const b = el.getBoundingClientRect();
+  return { id: el.dataset.id, text: el.querySelector('.n-text').value, left: b.left, top: b.top, right: b.right, bottom: b.bottom, w: b.width, h: b.height, z: Number(el.style.zIndex) };
+}));
+const footH = (page) => page.evaluate(() => document.querySelector('.foot').getBoundingClientRect().height);
+async function noFit(page, label) {
+  const s = await page.evaluate(() => ({ sh: document.documentElement.scrollHeight, ih: innerHeight, sw: document.documentElement.scrollWidth, iw: innerWidth }));
+  assert.equal(s.sh, s.ih, `${label}: scrollHeight`);
+  assert.equal(s.sw, s.iw, `${label}: scrollWidth`);
+}
+const ready = (page) => page.waitForSelector('#newNote[aria-disabled="false"]');
+
+async function notesRun(width, height, scheme, lang = 'en') {
+  const ctx = await browser.newContext({ viewport: { width, height }, colorScheme: scheme });
+  await asOrdinary(ctx);
+  const page = await ctx.newPage();
+  const tag = `notes ${width}x${height} ${scheme} ${lang}`;
+  const requests = [];
+  page.on('request', (r) => requests.push(r.url() + (r.postData() || '')));
+  const logs = [];
+  page.on('console', (m) => logs.push(m.text()));
+  const T = lang === 'tr'
+    ? { newNote: 'Yeni not', gather: 'Notları topla', move: (t) => `Notu taşı: ${t}`, del: (t) => `Notu sil: ${t}`, group: (t) => `Not: ${t}`, deleted: 'Not silindi.', gathered: (n) => `${n} not toplandı.`, region: 'Notlar', placed: 'Not yerleşti.' }
+    : { newNote: 'New note', gather: 'Gather notes', move: (t) => `Move note: ${t}`, del: (t) => `Delete note: ${t}`, group: (t) => `Note: ${t}`, deleted: 'Note deleted.', gathered: (n) => `${n} notes gathered.`, region: 'Notes', placed: 'Note placed.' };
+  try {
+    await page.goto(`http://localhost:${port}/?lang=${lang}`);
+    await page.waitForSelector('#prList .entry');
+    await ready(page);
+    assert.equal(await page.isHidden('#notes'), true, 'no notes: the layer is empty');
+    assert.equal(await page.getAttribute('#gatherNotes', 'aria-disabled'), 'true', 'Gather is disabled with no notes');
+    assert.equal(await page.getAttribute('#notes', 'aria-label'), T.region);
+    assert.equal(await page.textContent('#newNote'), T.newNote);
+    assert.equal(await page.textContent('#gatherNotes'), `${T.gather}0`);
+    assert.ok((await footH(page)) <= 18, `${tag}: footer one line (${await footH(page)})`);
+    await noFit(page, `${tag} empty`);
+
+    // Create, type, persist across a reload; the note opens at the pile spot
+    await page.click('#newNote');
+    assert.equal(await page.evaluate(() => document.activeElement.className), 'n-text', 'the caret is in the new note');
+    await page.keyboard.type('Sample note A');
+    let [a] = await noteRects(page);
+    near(a.right, width - 24, 0.5, `${tag} new note right`);
+    near(a.bottom, height - 44, 0.5, `${tag} new note bottom`);
+    near(a.w, 240, 0.5, 'note width'); near(a.h, 216, 0.5, 'note height');
+    assert.equal(await page.getAttribute('.note', 'aria-label'), T.group('Sample note A'));
+    assert.equal(await page.textContent('.n-title'), 'Sample note A');
+    await page.waitForTimeout(600);
+    await page.reload();
+    await page.waitForSelector('.note');
+    [a] = await noteRects(page);
+    assert.equal(a.text, 'Sample note A', 'the note survives a reload');
+    near(a.right, width - 24, 0.5, `${tag} reload keeps the place`);
+    assert.equal(await page.getAttribute('.n-move', 'aria-label'), T.move('Sample note A'));
+    assert.equal(await page.getAttribute('.n-del', 'aria-label'), T.del('Sample note A'));
+    assert.equal(await page.textContent('#gatherNotes'), `${T.gather}1`);
+    assert.ok(!(await page.title()).includes('Sample'), 'the title never carries note text');
+
+    // An empty new note is discarded on Escape and on blur, without a message
+    await page.click('#newNote');
+    await page.keyboard.press('Escape');
+    assert.equal((await noteRects(page)).length, 1, 'Escape discards an empty note');
+    assert.equal(await page.isHidden('#nStatus'), true, 'without a message');
+    await page.click('#newNote');
+    await page.click('#gatherNotes', { force: true });
+    await page.waitForTimeout(50);
+    assert.equal((await noteRects(page)).length, 1, 'blur discards an empty note');
+    await page.evaluate(() => document.activeElement.blur());
+    await page.click('#nStatus .n-undo').catch(() => {});
+
+    // Drag by the header: the note follows and snaps to the 24px grid
+    const h = await page.locator('.note .n-title').boundingBox();
+    await page.mouse.move(h.x + 20, h.y + 10);
+    await page.mouse.down();
+    await page.mouse.move(h.x - 300, h.y - 200, { steps: 8 });
+    await page.mouse.move(h.x - 313, h.y - 217, { steps: 3 });
+    assert.equal(await page.evaluate(() => document.querySelector('.note').classList.contains('lifted')), true, 'lifted while dragging');
+    await page.mouse.up();
+    [a] = await noteRects(page);
+    near(a.left % 24, 0, 0.01, 'dragged left on the grid'); near(a.top % 24, 0, 0.01, 'dragged top on the grid');
+    assert.ok(a.left < width - 264 - 250 && a.top < height - 260 - 150, 'it moved away from the pile');
+
+    // Move, then click where it goes
+    const moveBtn = page.locator('.note .n-move');
+    await moveBtn.click();
+    assert.equal(await moveBtn.getAttribute('aria-pressed'), 'true');
+    assert.ok((await page.textContent('#nStatus')).length > 10, 'the status says where to click');
+    await page.mouse.click(500, 400);
+    [a] = await noteRects(page);
+    assert.deepEqual([a.left, a.top], [504, 408], 'placed by one click, snapped');
+    assert.equal(await moveBtn.getAttribute('aria-pressed'), 'false');
+    await moveBtn.click();
+    await page.keyboard.press('Escape');
+    assert.equal(await moveBtn.getAttribute('aria-pressed'), 'false', 'Escape cancels');
+    [a] = await noteRects(page);
+    assert.deepEqual([a.left, a.top], [504, 408]);
+
+    // Keyboard: arrows move one cell, Shift four
+    await moveBtn.focus();
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('ArrowDown');
+    [a] = await noteRects(page);
+    assert.deepEqual([a.left, a.top], [528, 432], 'one cell per arrow');
+    await page.keyboard.press('Shift+ArrowLeft');
+    [a] = await noteRects(page);
+    assert.equal(a.left, 528 - 96, 'Shift moves four cells');
+    await page.waitForTimeout(1200);
+    assert.equal((await page.textContent('#notesLive')).trim(), T.placed);
+    for (let i = 0; i < 20; i++) await page.keyboard.press('Shift+ArrowLeft');
+    [a] = await noteRects(page);
+    assert.equal(a.left, 8, 'the note cannot leave the viewport');
+    await page.waitForTimeout(500);
+    await page.reload();
+    await page.waitForSelector('.note');
+    [a] = await noteRects(page);
+    assert.equal(a.left, 8, 'a moved note reloads in place');
+
+    // Three more notes, then gather: right 24px, front bottom 44px, 36px steps, z-order kept
+    for (const t of ['Sample note B', 'Sample note C', 'Sample note D']) {
+      await page.click('#newNote');
+      await page.keyboard.type(t);
+    }
+    await page.evaluate(() => document.activeElement.blur());
+    await page.waitForTimeout(600);
+    const before = await noteRects(page);
+    assert.equal(before.length, 4);
+    await noFit(page, `${tag} spread`);
+    await page.click('#gatherNotes');
+    assert.equal(await page.textContent('#nStatus .n-msg'), T.gathered(4));
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'gatherNotes', 'focus stays on Gather');
+    const piled = (await noteRects(page)).sort((x, y) => y.z - x.z);
+    piled.forEach((r, i) => {
+      near(r.right, width - 24, 0.5, `${tag} pile right #${i}`);
+      near(r.bottom, height - 44 - i * 36, 0.5, `${tag} pile bottom #${i}`);
+    });
+    assert.deepEqual(piled.map((r) => r.text), ['Sample note D', 'Sample note C', 'Sample note B', 'Sample note A'], 'the pile keeps the z-order');
+    assert.ok((await footH(page)) <= 18, `${tag}: footer one line with a status (${await footH(page)})`);
+    await noFit(page, `${tag} gathered`);
+    // the controls stay above the pile
+    assert.equal(await page.evaluate(() => { const b = document.querySelector('#gatherNotes').getBoundingClientRect(); return document.elementFromPoint(b.left + 4, b.top + 8).closest('#gatherNotes') !== null; }), true);
+    // Undo returns every note
+    await page.click('#nStatus .n-undo');
+    const back = await noteRects(page);
+    for (const r of back) { const o = before.find((x) => x.id === r.id); near(r.left, o.left, 0.5, 'undo left'); near(r.top, o.top, 0.5, 'undo top'); }
+    await page.click('#gatherNotes');
+    await page.waitForTimeout(100);
+    await page.reload();
+    await page.waitForSelector('.note');
+    const afterReload = (await noteRects(page)).sort((x, y) => y.z - x.z);
+    near(afterReload[0].right, width - 24, 0.5, 'the pile survives a reload');
+    near(afterReload[3].bottom, height - 44 - 3 * 36, 0.5, 'the pile survives a reload');
+
+    // Delete with Undo; the footer stays one line
+    await page.locator('.note .n-del').first().focus();
+    await page.keyboard.press('Enter');
+    assert.equal(await page.textContent('#nStatus .n-msg'), T.deleted);
+    assert.equal((await noteRects(page)).length, 3);
+    assert.ok((await footH(page)) <= 18, `${tag}: footer one line after delete`);
+    await page.click('#nStatus .n-undo');
+    assert.equal((await noteRects(page)).length, 4, 'Undo brings the note back');
+    assert.equal(await page.isHidden('#nStatus'), true, 'the status clears');
+
+    // Light and dark tokens
+    const bg = await page.evaluate(() => getComputedStyle(document.querySelector('.note')).backgroundColor);
+    assert.equal(bg, scheme === 'dark' ? 'rgb(57, 51, 34)' : 'rgb(243, 228, 166)', 'the manila surface');
+
+    // Privacy: the text left the page nowhere
+    assert.ok(requests.every((u) => !u.includes('Sample note')), 'no request carries note text');
+    assert.ok(logs.every((m) => !m.includes('Sample note')), 'no console line carries note text');
+    console.log(`ok   ${tag}`);
+  } catch (err) {
+    failed++;
+    console.error(`FAIL ${tag}: ${err.message}`);
+  } finally {
+    await ctx.close();
+  }
+}
+
+async function notesLimit(width, height) {
+  const tag = `notes limit ${width}x${height}`;
+  const ctx = await browser.newContext({ viewport: { width, height } });
+  await asOrdinary(ctx);
+  await ctx.addInitScript((v) => { if (!localStorage.getItem('stampboard-notes')) localStorage.setItem('stampboard-notes', v); }, JSON.stringify(seed(50)));
+  const page = await ctx.newPage();
+  try {
+    await page.goto(`http://localhost:${port}/?lang=en`);
+    await page.waitForSelector('.note');
+    assert.equal((await noteRects(page)).length, 50);
+    assert.equal(await page.getAttribute('#newNote', 'aria-disabled'), 'true', 'New note is disabled at 50');
+    assert.equal(await page.getAttribute('#newNote', 'aria-description'), '50 notes is the limit. Delete one to add another.');
+    await page.click('#gatherNotes');
+    const rs = await noteRects(page);
+    for (const r of rs) assert.ok(r.left >= 0 && r.top >= 8 && r.right <= width && r.bottom <= height, `${tag}: every note is inside the viewport`);
+    assert.ok(rs.every((r) => r.top >= 148 - 0.5), 'the pile top stays below 148px');
+    await noFit(page, tag);
+    assert.ok((await footH(page)) <= 18, `${tag}: footer one line`);
+    console.log(`ok   ${tag}`);
+  } catch (err) {
+    failed++;
+    console.error(`FAIL ${tag}: ${err.message}`);
+  } finally {
+    await ctx.close();
+  }
+}
+
+// The --demo page uses an in-memory store: it shows no stored notes and never reads or writes the real key.
+async function notesDemo() {
+  const ctx = await browser.newContext({ viewport: { width: 1633, height: 930 } });
+  await ctx.addInitScript(() => {
+    if (!localStorage.getItem('stampboard-notes')) localStorage.setItem('stampboard-notes', JSON.stringify({ v: 1, notes: [{ id: 'seed1', text: 'Sample note A', x: { e: 'l', o: 48 }, y: { e: 't', o: 200 }, z: 0 }] }));
+    window.__touched = [];
+    for (const m of ['getItem', 'setItem', 'removeItem']) {
+      const orig = Storage.prototype[m];
+      Storage.prototype[m] = function (k, ...rest) { if (String(k).startsWith('stampboard-notes')) window.__touched.push(`${m}:${k}`); return orig.call(this, k, ...rest); };
+    }
+  });
+  const page = await ctx.newPage();
+  try {
+    await page.goto(`http://localhost:${port}/?lang=en`);
+    await page.waitForSelector('.departures tr');
+    await ready(page);
+    assert.equal((await noteRects(page)).length, 0, 'the demo shows no stored note');
+    await page.click('#newNote');
+    await page.keyboard.type('Sample note B');
+    await page.waitForTimeout(600);
+    await page.click('#gatherNotes');
+    assert.equal((await noteRects(page)).length, 1, 'notes still work in memory');
+    const touched = await page.evaluate(() => window.__touched);
+    assert.deepEqual(touched, [], 'the demo page never reads or writes stampboard-notes');
+    const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('stampboard-notes')));
+    assert.equal(stored.notes.length, 1);
+    assert.equal(stored.notes[0].text, 'Sample note A', 'the stored notes are untouched');
+    console.log('ok   notes demo');
+  } catch (err) {
+    failed++;
+    console.error(`FAIL notes demo: ${err.message}`);
+  } finally {
+    await ctx.close();
+  }
+}
+
 try {
   for (let n = 0; n < 50; n++) {
     try { if ((await fetch(`http://localhost:${port}/`)).ok) break; } catch { /* not up yet */ }
@@ -184,6 +441,11 @@ try {
   }
   for (const [w, h] of [[1920, 1080], [1633, 930]]) for (const scheme of ['light', 'dark']) await run(w, h, scheme);
   await run(1633, 930, 'light', 'tr');
+  for (const [w, h] of [[1920, 1080], [1633, 930]]) for (const scheme of ['light', 'dark']) await notesRun(w, h, scheme);
+  await notesRun(1633, 930, 'light', 'tr');
+  await notesLimit(1920, 1080);
+  await notesLimit(1633, 930);
+  await notesDemo();
 } finally {
   await browser.close();
   server.kill();

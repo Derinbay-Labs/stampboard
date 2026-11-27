@@ -14,6 +14,7 @@ monitor (1920×1080) and you can leave it open all day.
 - **Pull requests:** CI state and review state, with a stamp on the rows that need you (CI broken, changes requested, ready to merge). Updates every minute.
 - **Issues:** labels, assignees and comment counts, with a stamp for the labels you choose (`security` by default).
 - **Agents:** the [Claude Code](https://claude.com/claude-code) sessions running on this machine, and on other machines you list, with each session's active subagents. Shown only when there are any. See [Agents](#agents).
+- **Notes:** movable sticky notes for your own thoughts. Drag them anywhere, even over the lists; Gather notes piles them in the bottom-right corner. They are stored only in this browser (`stampboard-notes`), never sent anywhere or logged, and `npm run demo` never shows or writes them. Notes are per address: `localhost` and `127.0.0.1` keep separate notes.
 - **Interface:** English or Turkish, picked from the browser language or the EN/TR switch. Light, dark or automatic theme.
 - **Dependencies:** none. It is one Node file for the server and one HTML file for the page.
 

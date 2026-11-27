@@ -24,6 +24,7 @@
   --pass: #4c6a2a; --run: #2f4a7a; --focus: #2f4a7a;
   --board: #141310; --board-2: #1f1d19; --board-rule: #34312b; --board-ink: #f4f1ea; --board-muted: #a8a196;
   --lamp: #ffcf33; --plate: #f4f1ea; --plate-ink: #141310;
+  --note: #f3e4a6; --note-ink: var(--ink); --note-muted: #5c4c1c; --note-edge: #8a7430; --note-line: rgba(138, 116, 48, .22);
   --shadow: 0 1px 0 var(--rule), 0 6px 18px -10px rgba(34, 32, 28, .35);
 }
 @media (prefers-color-scheme: dark) {
@@ -35,6 +36,7 @@
     --pass: #9bb86a; --run: #93a9d6; --focus: #93a9d6;
     --board: #0d0c0b; --board-2: #181714; --board-rule: #2e2b26; --board-ink: #ece6d8; --board-muted: #a49d8f;
     --plate: #ece6d8; --shadow: 0 1px 0 var(--rule), 0 6px 18px -10px rgba(0, 0, 0, .7);
+    --note: #393322; --note-muted: #cdbf99; --note-edge: #8c7b45; --note-line: rgba(140, 123, 69, .28);
   }
 }
 :root[data-theme="dark"] {
@@ -45,6 +47,7 @@
   --pass: #9bb86a; --run: #93a9d6; --focus: #93a9d6;
   --board: #0d0c0b; --board-2: #181714; --board-rule: #2e2b26; --board-ink: #ece6d8; --board-muted: #a49d8f;
   --plate: #ece6d8; --shadow: 0 1px 0 var(--rule), 0 6px 18px -10px rgba(0, 0, 0, .7);
+  --note: #393322; --note-muted: #cdbf99; --note-edge: #8c7b45; --note-line: rgba(140, 123, 69, .28);
 }
 
 * { box-sizing: border-box; }
@@ -231,7 +234,7 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
 
 .foot { flex: none; align-items: baseline; display: flex; flex-wrap: wrap; gap: 4px 22px; color: var(--muted); font-size: 12px; }
 .foot span { background: var(--paper); }
-.foot .credit { margin-left: auto; }
+.foot .credit { order: 2; }
 .foot a { color: inherit; text-underline-offset: 2px; }
 .foot a:hover { color: var(--ink); }
 
@@ -320,6 +323,40 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
 @media (max-width: 1280px), (max-height: 760px) {
   .rz .rz-enl { display: none; }
 }
+/* Sticky notes (docs/design/sticky-notes.md, Option 1). No motion. */
+.foot .nctl { order: 1; align-self: center; margin-left: auto; position: relative; z-index: 60; display: inline-flex; align-items: center; gap: 18px; white-space: nowrap; min-width: 0; }
+.foot .fbtn { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 17px; padding: 0; border: 0; background: var(--paper); color: var(--ink); font: inherit; font-weight: 600; line-height: 17px; cursor: pointer; }
+.foot .fbtn::after { content: ''; position: absolute; inset: -15px -6px -12px; }
+.foot .fbtn:hover { text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+.foot .fbtn svg { flex: none; }
+.foot .fbtn[aria-disabled="true"] { color: var(--muted); cursor: default; text-decoration: none; }
+.foot .n-ct { font: 500 12px/17px 'JetBrains Mono', ui-monospace, monospace; color: var(--muted); }
+.foot .n-status { display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
+.foot .n-status[hidden] { display: none; }
+.foot .n-msg { overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
+.foot .n-undo { text-decoration: underline; text-underline-offset: 2px; text-decoration-thickness: 1px; }
+.notes { position: fixed; inset: 0; z-index: 50; pointer-events: none; }
+.notes[hidden] { display: none; }
+body.placing, body.placing * { cursor: crosshair !important; }
+.note { position: absolute; width: 240px; height: 216px; display: grid; grid-template-rows: 36px minmax(0, 1fr); background: var(--note); color: var(--note-ink); border: 1px solid var(--note-edge); border-radius: 3px; box-shadow: 0 1px 0 var(--note-edge), 0 8px 16px -10px rgba(34, 32, 28, .45); pointer-events: auto; }
+.note.lifted { box-shadow: 0 16px 26px -8px rgba(0, 0, 0, .5); transform: translateY(-2px); }
+.note.reveal { opacity: .15; pointer-events: none; }
+.n-head { display: flex; align-items: center; gap: 2px; padding: 0 2px; border-bottom: 1px solid var(--note-line); cursor: grab; user-select: none; touch-action: none; }
+.n-btn { position: relative; flex: none; display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 3px; background: transparent; color: var(--note-ink); cursor: pointer; }
+.n-btn::after { content: ''; position: absolute; inset: -6px; }
+.n-btn:hover { background: var(--note-line); }
+.n-move[aria-pressed="true"] { background: var(--note-ink); color: var(--note); }
+.n-title { flex: 1; min-width: 0; font-size: 13px; font-weight: 650; font-stretch: 85%; line-height: 36px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.n-title.empty { color: var(--note-muted); font-weight: 500; }
+.n-unsaved { flex: none; display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; }
+.n-unsaved[hidden] { display: none; }
+.n-tip { display: none; position: absolute; top: 40px; left: 4px; z-index: 2; max-width: 220px; padding: 3px 8px; border-radius: 3px; background: var(--ink); color: var(--paper); font-size: 12px; line-height: 1.3; pointer-events: none; }
+.n-move:focus-visible + .n-tip { display: block; }
+.n-text { display: block; width: 100%; height: 100%; min-height: 0; resize: none; margin: 0; padding: 0 10px; border: 0; border-radius: 0 0 3px 3px; color: inherit; font: 400 14px/22px Archivo, system-ui, sans-serif; background-color: transparent; background-image: linear-gradient(transparent 21px, var(--note-line) 21px); background-size: 100% 22px; background-attachment: local; overflow-y: auto; }
+.n-text::placeholder { color: var(--note-muted); opacity: 1; }
+.n-text:focus-visible { outline-offset: -3px; }
+.n-count { position: absolute; right: 8px; bottom: 4px; padding: 0 3px; border-radius: 2px; background: var(--note); color: var(--note-muted); font: 500 11px/16px 'JetBrains Mono', ui-monospace, monospace; pointer-events: none; }
+.n-count[hidden] { display: none; }
 </style>
 </head>
 <body>
@@ -371,9 +408,11 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
     </section>
   </main>
 
-  <footer class="foot"><button type="button" class="reset" id="resetLayout" data-t="resetLayout" hidden></button><span id="foot" class="contents"></span></footer>
+  <footer class="foot"><button type="button" class="reset" id="resetLayout" data-t="resetLayout" hidden></button><span class="nctl"><button type="button" class="fbtn" id="newNote" aria-disabled="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 2.5h6.5l3.5 3.5v7.5H3z"/><path d="M8 7.2v4M6 9.2h4"/></svg><span data-t="newNote"></span></button><button type="button" class="fbtn" id="gatherNotes" aria-disabled="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2.5" y="6.5" width="11" height="7" rx="1"/><path d="M4.5 3.8h7"/></svg><span data-t="gatherNotes"></span><span class="n-ct" id="gatherCount"></span></button><span class="n-status" id="nStatus" role="status" aria-live="polite" hidden></span></span><span id="foot" class="contents"></span></footer>
   <div class="sr" id="rzLive" role="status" aria-live="polite"></div>
+  <div class="sr" id="notesLive" role="status" aria-live="polite"></div>
 </div>
+<div class="notes" id="notes" role="region" hidden></div>
 
 <script>
 (() => {
@@ -382,7 +421,7 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
   const safeUrl = (u) => (typeof u === 'string' && /^https:\/\/github\.com\//.test(u) ? esc(u) : '#');
   const store = {
     get(k) { try { return localStorage.getItem(k); } catch { return null; } },
-    set(k, v) { try { localStorage.setItem(k, v); } catch { /* the preference is not kept, nothing else breaks */ } },
+    set(k, v) { try { localStorage.setItem(k, v); return true; } catch { return false; /* the preference is not kept, nothing else breaks */ } },
     remove(k) { try { localStorage.removeItem(k); } catch { /* nothing to clear */ } },
   };
   // Keep the theme and language picked before the rename from Run panel
@@ -480,6 +519,13 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
       tipFold: 'Daralt', tipUnfold: 'Aç', tipEnlarge: 'Büyüt: iki kat yer',
       noRoom: 'Daha fazla yer yok', showsAll: 'Tümü zaten görünüyor', lastOpen: 'Bir bölüm açık kalır',
       resetLayout: 'Düzeni sıfırla', layoutReset: 'Düzen sıfırlandı', enlarged: (name) => `${name} büyütüldü`,
+      notes: 'Notlar', newNote: 'Yeni not', gatherNotes: 'Notları topla',
+      noteGroup: (t) => `Not: ${t}`, moveNote: (t) => `Notu taşı: ${t}`, deleteNote: (t) => `Notu sil: ${t}`,
+      noteText: 'Not metni', notePlaceholder: 'Bir düşünce yaz…', moveHint: 'Ok tuşları taşır · Shift daha uzağa',
+      placeHint: 'Notun gideceği yere tıkla. Esc vazgeçer.', notePlaced: 'Not yerleşti.', noteDeleted: 'Not silindi.', undo: 'Geri al',
+      notesGathered: (n) => `${num.format(n)} not toplandı.`, noNotes: 'Henüz not yok',
+      notesLimit: 'En fazla 50 not olur. Yenisi için birini sil.', notSaved: 'Kaydedilmedi',
+      saveFailed: 'Notlar bu makineye kaydedilemiyor. Sekmeyi kapatmadan önce metni kopyala.',
     },
     en: {
       appName: 'Stampboard',
@@ -569,6 +615,13 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
       tipFold: 'Fold', tipUnfold: 'Unfold', tipEnlarge: 'Enlarge: twice the room',
       noRoom: 'No more room', showsAll: 'Shows everything already', lastOpen: 'One section stays open',
       resetLayout: 'Reset layout', layoutReset: 'Layout reset', enlarged: (name) => `${name} enlarged`,
+      notes: 'Notes', newNote: 'New note', gatherNotes: 'Gather notes',
+      noteGroup: (t) => `Note: ${t}`, moveNote: (t) => `Move note: ${t}`, deleteNote: (t) => `Delete note: ${t}`,
+      noteText: 'Note text', notePlaceholder: 'Write a thought…', moveHint: 'Arrow keys move · Shift moves farther',
+      placeHint: 'Click where the note goes. Escape cancels.', notePlaced: 'Note placed.', noteDeleted: 'Note deleted.', undo: 'Undo',
+      notesGathered: (n) => `${num.format(n)} ${n === 1 ? 'note' : 'notes'} gathered.`, noNotes: 'No notes yet',
+      notesLimit: '50 notes is the limit. Delete one to add another.', notSaved: 'Not saved',
+      saveFailed: "Notes can't be saved on this machine. Copy the text before closing the tab.",
     },
   };
   // ?lang=en or ?lang=tr, then the EN/TR switch (stored in stampboard-lang), then the browser
@@ -996,6 +1049,62 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
   }
   // </layout-math>
 
+  // ---------- Sticky notes: pure maths (unit-tested in test/notes.test.mjs) ----------
+  // <notes-math>
+  const NOTE = { w: 240, h: 216, grid: 24, margin: 8, step: 36, pileRight: 24, pileBottom: 44, pileTop: 148, col: 252, max: 50, maxText: 4000, countAt: 3800 };
+  const snapGrid = (v) => Math.round(v / NOTE.grid) * NOTE.grid;
+  const clampBetween = (v, lo, hi) => Math.min(Math.max(v, lo), Math.max(lo, hi));
+  const clampPos = (left, top, vw, vh) => ({
+    left: clampBetween(left, NOTE.margin, vw - NOTE.w - NOTE.margin),
+    top: clampBetween(top, NOTE.margin, vh - NOTE.h - NOTE.margin),
+  });
+  // A note is stored against the nearest viewport corner: left or right offset, top or bottom offset.
+  const anchorOf = (left, top, vw, vh) => {
+    const right = vw - NOTE.w - left, bottom = vh - NOTE.h - top;
+    return {
+      x: left <= right ? { e: 'l', o: Math.round(left) } : { e: 'r', o: Math.round(right) },
+      y: top <= bottom ? { e: 't', o: Math.round(top) } : { e: 'b', o: Math.round(bottom) },
+    };
+  };
+  // Stored offsets are never changed by clamping, so a note returns when the window grows again.
+  const resolvePos = (x, y, vw, vh) => clampPos(x.e === 'r' ? vw - NOTE.w - x.o : x.o, y.e === 'b' ? vh - NOTE.h - y.o : y.o, vw, vh);
+  const pileCapacity = (vh) => Math.max(1, Math.floor((vh - NOTE.pileBottom - NOTE.pileTop - NOTE.h) / NOTE.step) + 1);
+  // rank 0 is the front note; older notes sit 36px higher, a full column starts the next one 252px to the left
+  const pileSlot = (rank, vw, vh) => {
+    const cap = pileCapacity(vh);
+    return {
+      left: vw - NOTE.pileRight - NOTE.w - Math.floor(rank / cap) * NOTE.col,
+      top: vh - NOTE.pileBottom - NOTE.h - (rank % cap) * NOTE.step,
+    };
+  };
+  const noteTitle = (text) => {
+    for (const line of String(text).split('\n')) if (line.trim()) return line.trim();
+    return '';
+  };
+  const okId = (v) => typeof v === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(v);
+  const okAnchor = (a, edges) => !!a && typeof a === 'object' && edges.includes(a.e) && Number.isFinite(a.o);
+  // Stored notes: readable records become notes, an unreadable record is kept unchanged in `rest`.
+  function sanitizeNotes(raw) {
+    if (raw == null || raw === '') return { notes: [], rest: [], bad: false };
+    let data;
+    try { data = JSON.parse(raw); } catch { return { notes: [], rest: [], bad: true }; }
+    if (!data || data.v !== 1 || !Array.isArray(data.notes)) return { notes: [], rest: [], bad: true };
+    const notes = [], rest = [], seen = new Set();
+    data.notes.forEach((r, i) => {
+      if (!r || typeof r !== 'object' || !okId(r.id) || seen.has(r.id) || typeof r.text !== 'string' || notes.length >= NOTE.max) { rest.push(r); return; }
+      seen.add(r.id);
+      notes.push({
+        id: r.id,
+        text: r.text.slice(0, NOTE.maxText),
+        x: okAnchor(r.x, ['l', 'r']) ? { e: r.x.e, o: r.x.o } : { e: 'r', o: NOTE.pileRight },
+        y: okAnchor(r.y, ['t', 'b']) ? { e: r.y.e, o: r.y.o } : { e: 'b', o: NOTE.pileBottom },
+        z: Number.isFinite(r.z) ? r.z : i,
+      });
+    });
+    return { notes, rest, bad: false };
+  }
+  // </notes-math>
+
   const LAYOUT_KEY = 'stampboard-layout';
   const RZ = {
     board: { enlarge: 'enlargeBoard', body: 'bodyBoard', ctl: 'board', name: 'secBoard' },
@@ -1327,6 +1436,7 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
       unreachable = true;
     } finally {
       polling = false;
+      initNotes(isDemoSnapshot(data));
       render();
     }
   }
@@ -1370,6 +1480,323 @@ h1 { margin: 0; font-weight: 700; font-stretch: 72%; font-size: 40px; line-heigh
     });
   });
   setTheme(['auto', 'light', 'dark'].includes(store.get('stampboard-theme')) ? store.get('stampboard-theme') : 'auto');
+
+  // ---------- Sticky notes (docs/design/sticky-notes.md, Option 1) ----------
+  // Privacy (spec 5.1): note text lives only in this browser's storage under stampboard-notes. It is never logged,
+  // never sent, never put in the title or URL. In the demo the page uses an in-memory store and never touches it.
+  const NOTES_KEY = 'stampboard-notes';
+  const notesEl = $('#notes');
+  const memStore = (() => { const m = new Map(); return { get: (k) => (m.has(k) ? m.get(k) : null), set: (k, v) => { m.set(k, v); return true; }, remove: (k) => { m.delete(k); } }; })();
+  // The demo snapshot is the only one with this exact fixture; the page learns it from the first answer.
+  const isDemoSnapshot = (d) => !!d && Array.isArray(d.owners) && d.owners.length === 1 && d.owners[0] === 'acme' && d.tookMs === 1240 && !!d.work && d.work.tookMs === 820;
+  const nIcon = (inner) => `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${inner}</svg>`;
+  const NICON = {
+    move: nIcon('<path d="M8 2.5v11M2.5 8h11"/><path d="M6 4.5 8 2.5l2 2M6 11.5l2 2 2-2M4.5 6 2.5 8l2 2M11.5 6l2 2-2 2"/>'),
+    del: nIcon('<path d="M4 4l8 8M12 4l-8 8"/>'),
+    warn: nIcon('<path d="M8 2.5 14 13H2z"/><path d="M8 6.8v3M8 11.8v.1"/>'),
+  };
+  let notes = []; // { id, text, x, y, z, fresh, unsaved } in creation order; z is the stacking order
+  let rest = []; // stored records this page could not read; written back unchanged
+  let notesReady = false, notesStore = null, rawBad = null, rawKept = false, saveFailed = false;
+  let placing = null, drag = null, suppressClick = false;
+  let saveTimer = 0, statusTimer = 0, placedTimer = 0, flipN = false;
+  let transient = null; // { text, undo }
+  const noteEls = new Map();
+  const vp = () => ({ w: document.documentElement.clientWidth, h: document.documentElement.clientHeight });
+  const byId = (id) => notes.find((n) => n.id === id);
+  const newId = () => `n${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
+  const topZ = () => notes.reduce((m, n) => Math.max(m, n.z), 0);
+
+  function persist() {
+    if (!notesReady) return;
+    clearTimeout(saveTimer); saveTimer = 0;
+    let ok = true;
+    if (rawBad != null && !rawKept) { ok = notesStore.set(`${NOTES_KEY}-unreadable`, rawBad); rawKept = ok; } // never overwrite what we could not read
+    const recs = notes.filter((n) => !n.fresh || n.text).map(({ id, text, x, y, z }) => ({ id, text, x, y, z }));
+    ok = ok && notesStore.set(NOTES_KEY, JSON.stringify({ v: 1, notes: recs.concat(rest) }));
+    saveFailed = !ok;
+    for (const n of notes) { n.unsaved = !ok; paintNote(n); }
+    drawStatus();
+  }
+  const persistSoon = () => { clearTimeout(saveTimer); saveTimer = setTimeout(persist, 400); };
+
+  function paintNote(n) {
+    const el = noteEls.get(n.id);
+    if (!el) return;
+    const title = noteTitle(n.text);
+    const shown = title || L.newNote;
+    const p = resolvePos(n.x, n.y, vp().w, vp().h);
+    el.style.left = `${p.left}px`; el.style.top = `${p.top}px`;
+    el.style.zIndex = String(Math.round(n.z));
+    el.setAttribute('aria-label', L.noteGroup(shown));
+    const t = el.querySelector('.n-title');
+    t.textContent = shown; t.classList.toggle('empty', !title);
+    el.querySelector('.n-move').setAttribute('aria-label', L.moveNote(shown));
+    const del = el.querySelector('.n-del');
+    del.setAttribute('aria-label', L.deleteNote(shown)); del.title = L.deleteNote(shown);
+    el.querySelector('.n-unsaved').hidden = !n.unsaved;
+    const c = el.querySelector('.n-count');
+    c.hidden = n.text.length < NOTE.countAt;
+    c.textContent = `${num.format(n.text.length)} / ${num.format(NOTE.maxText)}`;
+  }
+  const paintAll = () => { for (const n of notes) paintNote(n); notesEl.hidden = !notes.length; };
+
+  function buildNote(n) {
+    const el = document.createElement('div');
+    el.className = 'note'; el.dataset.id = n.id; el.setAttribute('role', 'group');
+    el.innerHTML = `<div class="n-head"><button type="button" class="n-btn n-move" aria-pressed="false" aria-describedby="nh-${n.id}">${NICON.move}</button><span class="n-tip" id="nh-${n.id}" role="tooltip">${esc(L.moveHint)}</span><span class="n-title"></span><span class="n-unsaved" hidden>${NICON.warn}${esc(L.notSaved)}</span><button type="button" class="n-btn n-del">${NICON.del}</button></div><textarea class="n-text" maxlength="${NOTE.maxText}" spellcheck="false" aria-label="${esc(L.noteText)}" placeholder="${esc(L.notePlaceholder)}"></textarea><span class="n-count" hidden></span>`;
+    el.querySelector('.n-text').value = n.text;
+    noteEls.set(n.id, el);
+    notesEl.appendChild(el);
+    paintNote(n);
+    notesEl.hidden = false;
+    return el;
+  }
+
+  function syncCtl() {
+    const nb = $('#newNote'), gb = $('#gatherNotes');
+    const full = notes.length >= NOTE.max;
+    const off = (b, why) => { b.setAttribute('aria-disabled', why === false ? 'false' : 'true'); if (why) { b.setAttribute('aria-description', why); b.title = why; } else { b.removeAttribute('aria-description'); b.removeAttribute('title'); } };
+    off(nb, !notesReady ? '' : full ? L.notesLimit : false);
+    off(gb, !notesReady ? '' : notes.length ? false : L.noNotes);
+    $('#gatherCount').textContent = notesReady ? num.format(notes.length) : '';
+  }
+
+  function drawStatus() {
+    const el = $('#nStatus');
+    const msg = transient ? transient.text : placing ? L.placeHint : saveFailed ? L.saveFailed : '';
+    const undo = transient && transient.undo;
+    el.hidden = !msg;
+    el.innerHTML = msg ? `<span class="n-msg">${esc(msg)}</span>` + (undo ? `<button type="button" class="fbtn n-undo">${esc(L.undo)}</button>` : '') : '';
+  }
+  function setStatus(text, undo) {
+    clearTimeout(statusTimer);
+    transient = text ? { text, undo } : null;
+    if (transient) statusTimer = setTimeout(() => { transient = null; drawStatus(); }, 10000);
+    drawStatus();
+  }
+  const sayNotes = (t) => { flipN = !flipN; $('#notesLive').textContent = t + (flipN ? '' : ' '); };
+  const placedSoon = () => { clearTimeout(placedTimer); placedTimer = setTimeout(() => sayNotes(L.notePlaced), 1000); };
+
+  function front(n) {
+    if (n.z >= topZ() && notes.filter((m) => m.z === n.z).length === 1) return;
+    n.z = topZ() + 1;
+    paintNote(n);
+    persist();
+  }
+
+  function setPos(n, left, top, say) {
+    const { w, h } = vp();
+    const p = clampPos(left, top, w, h);
+    const a = anchorOf(p.left, p.top, w, h);
+    n.x = a.x; n.y = a.y;
+    paintNote(n);
+    persist();
+    if (say) placedSoon();
+  }
+
+  function newNote() {
+    if (!notesReady || notes.length >= NOTE.max) return;
+    const { w, h } = vp();
+    const slot = pileSlot(0, w, h);
+    const a = anchorOf(slot.left, slot.top, w, h);
+    const n = { id: newId(), text: '', x: a.x, y: a.y, z: topZ() + 1, fresh: true, unsaved: false };
+    notes.push(n);
+    buildNote(n);
+    syncCtl();
+    noteEls.get(n.id).querySelector('.n-text').focus();
+  }
+
+  function removeNote(n) {
+    clearTimeout(saveTimer);
+    if (placing === n.id) stopPlacing();
+    const el = noteEls.get(n.id);
+    if (el) el.remove();
+    noteEls.delete(n.id);
+    notes.splice(notes.indexOf(n), 1);
+    notesEl.hidden = !notes.length;
+    syncCtl();
+  }
+
+  function deleteNote(n) {
+    const i = notes.indexOf(n);
+    const next = notes[i + 1] || notes[i - 1];
+    const keep = n.text ? { ...n } : null;
+    removeNote(n);
+    persist();
+    if (next) noteEls.get(next.id).querySelector('.n-move').focus(); else $('#newNote').focus();
+    if (!keep) return;
+    setStatus(L.noteDeleted, () => {
+      if (notes.length >= NOTE.max) { setStatus(L.notesLimit); return; }
+      keep.fresh = false; keep.unsaved = false;
+      notes.splice(Math.min(i, notes.length), 0, keep);
+      buildNote(keep);
+      persist(); syncCtl();
+      noteEls.get(keep.id).querySelector('.n-move').focus();
+    });
+  }
+
+  function gather() {
+    if (!notes.length) return;
+    const before = notes.map((n) => ({ n, x: n.x, y: n.y }));
+    const { w, h } = vp();
+    notes.slice().sort((a, b) => b.z - a.z).forEach((n, rank) => {
+      const s = pileSlot(rank, w, h);
+      const a = anchorOf(s.left, s.top, w, h);
+      n.x = a.x; n.y = a.y;
+    });
+    paintAll(); persist();
+    setStatus(L.notesGathered(notes.length), () => {
+      for (const b of before) if (notes.includes(b.n)) { b.n.x = b.x; b.n.y = b.y; }
+      paintAll(); persist();
+      $('#gatherNotes').focus();
+    });
+  }
+
+  function startPlacing(n) {
+    placing = n.id;
+    document.body.classList.add('placing');
+    for (const [id, el] of noteEls) el.querySelector('.n-move').setAttribute('aria-pressed', String(id === n.id));
+    drawStatus();
+  }
+  function stopPlacing() {
+    placing = null;
+    document.body.classList.remove('placing');
+    for (const el of noteEls.values()) el.querySelector('.n-move').setAttribute('aria-pressed', 'false');
+    drawStatus();
+  }
+
+  function onDragMove(e) {
+    if (!drag) return;
+    const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+    if (!drag.moved && Math.hypot(dx, dy) <= 4) return;
+    if (!drag.moved) { drag.moved = true; noteEls.get(drag.n.id).classList.add('lifted'); }
+    const { w, h } = vp();
+    const p = clampPos(drag.ox + dx, drag.oy + dy, w, h);
+    const el = noteEls.get(drag.n.id);
+    el.style.left = `${p.left}px`; el.style.top = `${p.top}px`;
+  }
+  function onDragEnd() {
+    window.removeEventListener('pointermove', onDragMove);
+    window.removeEventListener('pointerup', onDragEnd);
+    window.removeEventListener('pointercancel', onDragEnd);
+    const d = drag; drag = null;
+    if (!d || !d.moved || !noteEls.has(d.n.id)) return;
+    const el = noteEls.get(d.n.id);
+    el.classList.remove('lifted');
+    suppressClick = true; setTimeout(() => { suppressClick = false; }, 0);
+    d.n.fresh = false;
+    const r = el.getBoundingClientRect();
+    setPos(d.n, snapGrid(r.left), snapGrid(r.top), true);
+  }
+
+  notesEl.addEventListener('pointerdown', (e) => {
+    const el = e.target.closest('.note');
+    const n = el && byId(el.dataset.id);
+    if (!n) return;
+    front(n);
+    if (e.button !== 0 || !e.target.closest('.n-head') || e.target.closest('.n-del')) return;
+    const r = el.getBoundingClientRect();
+    drag = { n, sx: e.clientX, sy: e.clientY, ox: r.left, oy: r.top, moved: false };
+    window.addEventListener('pointermove', onDragMove);
+    window.addEventListener('pointerup', onDragEnd);
+    window.addEventListener('pointercancel', onDragEnd);
+  });
+  notesEl.addEventListener('focusin', (e) => { const el = e.target.closest('.note'); const n = el && byId(el.dataset.id); if (n) front(n); });
+  notesEl.addEventListener('input', (e) => {
+    const el = e.target.closest('.note');
+    const n = el && byId(el.dataset.id);
+    if (!n || !e.target.matches('.n-text')) return;
+    n.text = e.target.value; n.fresh = false;
+    paintNote(n);
+    persistSoon();
+  });
+  notesEl.addEventListener('focusout', (e) => {
+    const el = e.target.closest('.note');
+    const n = el && byId(el.dataset.id);
+    if (!n || (e.relatedTarget && el.contains(e.relatedTarget))) return;
+    setTimeout(() => {
+      if (!notes.includes(n) || el.contains(document.activeElement) || (drag && drag.n === n) || placing === n.id) return;
+      if (n.fresh && !n.text) { removeNote(n); return; }
+      persist();
+    }, 0);
+  });
+  notesEl.addEventListener('click', (e) => {
+    const el = e.target.closest('.note');
+    const n = el && byId(el.dataset.id);
+    if (!n) return;
+    if (e.target.closest('.n-del')) { deleteNote(n); return; }
+    if (e.target.closest('.n-move')) {
+      if (suppressClick) return;
+      if (placing === n.id) stopPlacing(); else startPlacing(n);
+    }
+  });
+  notesEl.addEventListener('keydown', (e) => {
+    const el = e.target.closest('.note');
+    const n = el && byId(el.dataset.id);
+    if (!n) return;
+    if (e.target.matches('.n-text') && e.key === 'Escape' && n.fresh && !n.text) { e.preventDefault(); removeNote(n); $('#newNote').focus(); return; }
+    const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+    if (!d || !e.target.matches('.n-move')) return;
+    e.preventDefault();
+    const step = NOTE.grid * (e.shiftKey ? 4 : 1);
+    const r = el.getBoundingClientRect();
+    setPos(n, snapGrid(r.left + d[0] * step), snapGrid(r.top + d[1] * step), true);
+  });
+  // Click to place (WCAG 2.5.7): the next click on the page puts the note's top-left corner there
+  document.addEventListener('click', (e) => {
+    if (!placing) return;
+    const own = e.target.closest && e.target.closest('.note');
+    if (own && own.dataset.id === placing && e.target.closest('.n-move')) return; // a second click on Move cancels
+    if (e.detail === 0) return; // a keyboard activation has no place to put the note
+    e.preventDefault(); e.stopPropagation();
+    const n = byId(placing);
+    stopPlacing();
+    if (n) setPos(n, snapGrid(e.clientX), snapGrid(e.clientY), true);
+  }, true);
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || !placing) return;
+    const el = noteEls.get(placing);
+    stopPlacing();
+    if (el) el.querySelector('.n-move').focus();
+  });
+  // Focus reveal (WCAG 2.4.11): notes that completely cover the control keyboard focus lands on step aside
+  const revealed = new Set();
+  const unreveal = () => { for (const el of revealed) el.classList.remove('reveal'); revealed.clear(); };
+  document.addEventListener('focusin', (e) => {
+    unreveal();
+    const t = e.target;
+    if (!t || !t.getBoundingClientRect || t.closest('.notes, .nctl')) return;
+    const b = t.getBoundingClientRect();
+    for (const el of noteEls.values()) {
+      const r = el.getBoundingClientRect();
+      if (b.width && b.left >= r.left && b.right <= r.right && b.top >= r.top && b.bottom <= r.bottom) { el.classList.add('reveal'); revealed.add(el); }
+    }
+  });
+  document.addEventListener('focusout', (e) => { if (!e.relatedTarget) unreveal(); });
+  window.addEventListener('resize', paintAll);
+
+  $('#newNote').addEventListener('click', () => { if ($('#newNote').getAttribute('aria-disabled') !== 'true') newNote(); });
+  $('#gatherNotes').addEventListener('click', () => { if ($('#gatherNotes').getAttribute('aria-disabled') !== 'true') gather(); });
+  $('#nStatus').addEventListener('click', (e) => {
+    if (!e.target.closest('.n-undo') || !transient || !transient.undo) return;
+    const undo = transient.undo;
+    setStatus(null);
+    undo();
+  });
+  notesEl.setAttribute('aria-label', L.notes);
+
+  // Called once, after the first answer from the server (or its failure): that answer says whether this is the demo.
+  function initNotes(demo) {
+    if (notesReady) return;
+    notesReady = true;
+    notesStore = demo ? memStore : store;
+    const s = sanitizeNotes(notesStore.get(NOTES_KEY));
+    notes = s.notes; rest = s.rest;
+    if (s.bad) rawBad = notesStore.get(NOTES_KEY);
+    for (const n of notes) buildNote(n);
+    paintAll(); syncCtl();
+  }
 
   render();
   poll(false);

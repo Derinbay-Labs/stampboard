@@ -8,3 +8,4 @@ web/.next
 web/out
 test/screenshots/*
 !test/screenshots/section-resize-1920x1080-light.png
+notes.json
